@@ -1,19 +1,20 @@
 #include "digital_in.h"
 #include <avr/io.h>
 
-Digital_in::Digital_in(int pin)
+Digital_in::Digital_in()
 {
-    pinMask = (1 << pin);
 }
 
-void Digital_in::init()
+
+void Digital_in::init(int pin)
 {
     // set DDR bit to 0
-    init(false);
+    init(pin, false);
 }
 
-void Digital_in::init(bool pull_up)
+void Digital_in::init(int pin, bool pull_up)
 {
+    pinMask = (1 << pin);
     DDRB &= ~pinMask; // DDR bit to 0
     if (pull_up)
     {

@@ -3,9 +3,10 @@
 class Digital_in
 {
 public:
-    Digital_in(int pin);
+    Digital_in();
     void init();
-    void init(bool pull_up);
+    void init(int pin);
+    void init(int pin, bool pull_up);
     bool is_hi();
     bool is_lo();
     bool state();

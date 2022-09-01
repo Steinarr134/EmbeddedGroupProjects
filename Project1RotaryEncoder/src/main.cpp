@@ -1,30 +1,157 @@
+#include <avr/io.h>
 #include <avr/delay.h>
-#include <digital_in.h>
+#include <avr/interrupt.h>
 #include <digital_out.h>
+#include <timer_msec.h>
+#include <encoder_simple.h>
+// #include <digital_in.h>
 
-// Part 1
-int main()
+// USART code taken from datasheet for printing to serial
+#define FOSC 16000000 // Clock Speed
+#define BAUD 9600
+#define MYUBRR FOSC / 16 / BAUD - 1
+
+void USART_Init(unsigned int ubrr)
 {
-  Digital_out led(5); // PB5 Arduino Nano built-in LED on D13
-  led.init();
+  /*Set baud rate */
+  UBRR0H = (unsigned char)(ubrr >> 8);
+  UBRR0L = (unsigned char)ubrr;
+  // Enable receiver and transmitter * /
+      UCSR0B = (1 << RXEN0) | (1 << TXEN0);
+  /* Set frame format: 8data, 2stop bit */
+  UCSR0C = (3 << UCSZ00);
+}
 
-  Digital_in input(1); // PB1, pin 9 on Arduino Nano
-  input.init(true); // use internal pull up
-  
-  int counter = 0;
-  bool last_state = 0;
-  while (true){
-  // if input changed
+void USART_Transmit(unsigned char data)
+{
+  /* Wait for empty transmit buffer */
+  while (!(UCSR0A & (1 << UDRE0)))
+    ;
+  /* Put data into buffer, sends the data */
+  UDR0 = data;
+}
 
-    if (input.is_hi() != last_state)
-    {
-      counter++;
-      last_state = !last_state;
-
-      // blink led to signal 
-      led.set_hi();
-      _delay_us(100);
-      led.set_lo();
+// helper function to print an integer
+void print_i(int i)
+{
+  // speial case for when i is 0
+  if (i == 0){
+    USART_Transmit('0');
+    USART_Transmit((unsigned char)10);
+    return;
+  }
+  // if negative print minus sign and then just as if it were positive
+  if (i < 0){
+    USART_Transmit('-');
+    i = -i;
+  }
+  // don't print leading zeros, however,do print zeros that are not leading
+  bool leading_zeros_done = false;
+  for (int j = 4; j>= 0;j--) // supports 5 digit numbers (ints can't be larger)
+  {
+    int m = pow(10, j);
+    if (leading_zeros_done || i/m > 0){
+      USART_Transmit((unsigned char)(((i/m)%10) + 48));
+      leading_zeros_done = true;
     }
   }
+  // finally print \n 
+  USART_Transmit((unsigned char)10);
 }
+
+// void set_interrupt_d2()
+// {
+//   DDRD &= ~(1 << DDD2);   // set the PD2 pin as input
+//   PORTD |= (1 << PORTD2); // enable pull-up resistor on PD2
+//   EICRA |= (1 << ISC00);  // set INT0 to trigger on ANY logic change
+//   EIMSK |= (1 << INT0);   // Turns on INT0
+//   sei();                  // turn on interrupts
+// }
+// void set_interrupt_d1()
+// {
+//   DDRD &= ~(1 << DDD1);   // set the PD2 pin as input
+//   PORTD |= (1 << PORTD1); // enable pull-up resistor on PD2
+//   EICRA |= (1 << ISC00);  // set INT0 to trigger on ANY logic change
+//   EIMSK |= (1 << INT0);   // Turns on INT0
+//   sei();                  // turn on interrupts
+// }
+
+uint32_t counter = 0;
+volatile bool time_to_print = false;
+Timer_msec timer;
+Digital_out led(5);
+// Digital_in input;
+Encoder_simple encoder;
+
+ISR(TIMER1_COMPA_vect)
+{
+  time_to_print = true;
+  // led.toggle();
+}
+// Part 1
+
+
+int main()
+{
+  bool part1 = true;
+  USART_Init(MYUBRR);
+  timer.init(500);
+  sei();
+  led.init();
+  // input.init(1,true);
+
+  if (part1)
+  {
+    encoder.init();
+    bool last = false;
+    int c = 0;
+    while (true){
+      // if (input.is_hi()){
+      //   if (last == false)
+      //   {
+      //     c++;
+      //   last = true;
+      //   }
+
+      // }
+      // else{
+      //   last = false;
+      // }
+
+      encoder.monitor();
+      if (time_to_print)
+      {
+        time_to_print = false;
+        print_i(encoder.position());
+        // print_i(c);
+        led.toggle();
+
+      }
+    }
+  }
+  // else
+  // {
+  //   // set_interrupt_d1();
+  //   // set_interrupt_d2();
+  // }
+
+  // part 2
+
+  // while (true){
+  //   _delay_ms(1000);
+  //   //print to serial??
+  //   Serial.println(counter);
+
+  // }
+}
+
+// ISR(INT0_vect)
+// {
+//   counter++;
+// }
+
+// ISR(INT1_vect)
+// {
+//   /* interrupt handler code here */
+//   counter++;
+// }

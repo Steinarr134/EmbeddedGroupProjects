@@ -26,13 +26,13 @@ void Timer_msec::init(int period_ms){
     // instead, the solution to part 1:
 
     // period_ms has to be 4194 or smaller since  (2**16 -1)*1.024/16.000.000 =
-    uint16_t max_period_ms = 4194;
+    int max_period_ms = 4194;
     if (period_ms > max_period_ms)
     {
         period_ms = max_period_ms;
     }
     // total amount of clock pulses (also convert ms to seconds)
-    uint32_t total = 16000 *period_ms;
+    uint32_t total = (uint32_t)16000 *period_ms;
     // target after taking prescaler into account
     uint16_t target = total / 1024 - 1;
 
@@ -51,13 +51,13 @@ void Timer_msec::init(int period_ms){
 void Timer_msec::init(int period_ms, float duty_cycle)
 {
     // period_ms has to be 4194 or smaller since  (2**16 -1)*1.024/16.000.000 = 
-    uint16_t max_period_ms = 4194;
+    int max_period_ms = 4194;
     if (period_ms > max_period_ms)
     {
         period_ms = max_period_ms;
     }
     // total amount of clock pulses (also convert ms to seconds)
-    uint32_t total = 16000 * period_ms;
+    uint32_t total = (uint32_t)16000 * period_ms;
     // target after taking prescaler into account
     uint16_t target = total/1024 - 1;
 
@@ -67,7 +67,7 @@ void Timer_msec::init(int period_ms, float duty_cycle)
     TCCR1B = 0;                          //
     TCNT1 = 0;                           //  initialize counter value to 0
     OCR1A = target;                      // assign target count to compare register A (must be less than 65536)
-    OCR1B = OCR1A * duty_cycle; 
+    OCR1B = OCR1A * duty_cycle;
     TCCR1B |= (1 << WGM12);              // clear the timer on compare match A
     TIMSK1 |= (1 << OCIE1A);             // set interrupt on compare match A
     TIMSK1 |= (1 << OCIE1B);             // set interrupt on compare match B
