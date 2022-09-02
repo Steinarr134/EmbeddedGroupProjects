@@ -6,6 +6,8 @@
 #include <encoder_simple.h>
 // #include <digital_in.h>
 
+
+// for printing to serial::
 // USART code taken from datasheet for printing to serial
 #define FOSC 16000000 // Clock Speed
 #define BAUD 9600
@@ -59,29 +61,31 @@ void print_i(int i)
   USART_Transmit((unsigned char)10);
 }
 
-// void set_interrupt_d2()
-// {
-//   DDRD &= ~(1 << DDD2);   // set the PD2 pin as input
-//   PORTD |= (1 << PORTD2); // enable pull-up resistor on PD2
-//   EICRA |= (1 << ISC00);  // set INT0 to trigger on ANY logic change
-//   EIMSK |= (1 << INT0);   // Turns on INT0
-//   sei();                  // turn on interrupts
-// }
-// void set_interrupt_d1()
-// {
-//   DDRD &= ~(1 << DDD1);   // set the PD2 pin as input
-//   PORTD |= (1 << PORTD1); // enable pull-up resistor on PD2
-//   EICRA |= (1 << ISC00);  // set INT0 to trigger on ANY logic change
-//   EIMSK |= (1 << INT0);   // Turns on INT0
-//   sei();                  // turn on interrupts
-// }
+// part 2 with interrupts
 
-uint32_t counter = 0;
-volatile bool time_to_print = false;
-Timer_msec timer;
-Digital_out led(5);
-// Digital_in input;
-Encoder_simple encoder;
+void set_interrupt_d2()
+{
+  DDRD &= ~(1 << DDD2);   // set the PD2 pin as input
+  PORTD |= (1 << PORTD2); // enable pull-up resistor on PD2
+  EICRA |= (1 << ISC00);  // set INT0 to trigger on ANY logic change
+  EIMSK |= (1 << INT0);   // Turns on INT0
+  sei();                  // turn on interrupts
+}
+void set_interrupt_d1()
+{
+  DDRD &= ~(1 << DDD1);   // set the PD2 pin as input
+  PORTD |= (1 << PORTD1); // enable pull-up resistor on PD2
+  EICRA |= (1 << ISC00);  // set INT0 to trigger on ANY logic change
+  EIMSK |= (1 << INT0);   // Turns on INT0
+  sei();                  // turn on interrupts
+}
+
+
+// for part 1
+uint32_t counter = 0; // counts the pulses
+volatile bool time_to_print = false; // printing flag
+Timer_msec timer;  // timer to print every now and then
+Encoder_simple encoder; // create the encoder
 
 ISR(TIMER1_COMPA_vect)
 {
@@ -91,12 +95,12 @@ ISR(TIMER1_COMPA_vect)
 // Part 1
 
 
+Digital_out led(5);
 int main()
 {
   bool part1 = true;
   USART_Init(MYUBRR);
   timer.init(500);
-  sei();
   led.init();
   // input.init(1,true);
 
@@ -106,18 +110,6 @@ int main()
     bool last = false;
     int c = 0;
     while (true){
-      // if (input.is_hi()){
-      //   if (last == false)
-      //   {
-      //     c++;
-      //   last = true;
-      //   }
-
-      // }
-      // else{
-      //   last = false;
-      // }
-
       encoder.monitor();
       if (time_to_print)
       {
@@ -129,29 +121,28 @@ int main()
       }
     }
   }
-  // else
-  // {
-  //   // set_interrupt_d1();
-  //   // set_interrupt_d2();
-  // }
+  else
+  {
+    set_interrupt_d1();
+    set_interrupt_d2();
 
-  // part 2
+    while (true){
+    _delay_ms(1000);
+    USART_Transmit('#');
+    print_i(counter);
+    }
 
-  // while (true){
-  //   _delay_ms(1000);
-  //   //print to serial??
-  //   Serial.println(counter);
-
-  // }
+  }
 }
 
-// ISR(INT0_vect)
-// {
-//   counter++;
-// }
+// only counts up. never down
+ISR(INT0_vect)
+{
+  counter++;
+}
 
-// ISR(INT1_vect)
-// {
-//   /* interrupt handler code here */
-//   counter++;
-// }
+ISR(INT1_vect)
+{
+  /* interrupt handler code here */
+  counter++;
+}
