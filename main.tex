@@ -10,6 +10,17 @@
 \maketitle
 
 \section{}
-Hall effect sensor has 7 hole pairs. So with each revolution of the motor shaft the signal will rise and fall 7 times, giving 14 edges to measure. The maximum motor speed is rated at 15.000 RPM or 250 Hz. The time between edges is thus expected to be \((14*250Hz)^{-1}) = 0.286 ms\)
+The hall effect sensor has 7 hole pairs. So with each revolution of the motor shaft the signal will rise and fall 7 times. Since there are two signals shifted 90° out of phase there are 28 edges per revolution equally spaced. The maximum motor speed is rated at 15.000 RPM or 250 Hz. The minimum time between edges is thus expected to be \((28*250Hz)^{-1}) = 143 \mu s\)
 
+We wrote an encoder class that monitors pins 9 and 10 on the Arduino and keeps track of how many pulses have been registered. 
+
+We wired the two signals and the signal from the LED pin to an RTB2004 oscilloscope and observed that we could turn the LED on for 120 microseconds without dropping pulses. 
+
+VANTAR MYND HÉRNA
+
+However, printing the result to the serial port at 9600 baud takes around a millisecond per character. Thus we are dropping pulses while writing to the serial port.
+
+
+\section{}
+Using interrupts to monitor the pins allows us to count the pulses even while writing to the serial port.
 \end{document}
