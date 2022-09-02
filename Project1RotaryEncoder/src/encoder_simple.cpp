@@ -1,6 +1,7 @@
 #include <encoder_simple.h>
 #include <avr/delay.h>
 #include <digital_out.h>
+#include <avr/io.h>
 
 Encoder_simple::Encoder_simple(){}
 
@@ -21,6 +22,7 @@ void Encoder_simple::monitor()
     {
         if (last_state1 == 0)
         {
+            PORTB ^= (1<<5);
             if (input2.is_hi())
             {
                 counter++;
@@ -41,6 +43,7 @@ void Encoder_simple::monitor()
     {
         if (last_state2 == 0)
         {
+            PORTB ^= (1<<5);
 
             if (input1.is_hi())
             {
