@@ -58,13 +58,21 @@ We wired the two signals and the signal from the LED pin to an RTB2004 oscillosc
 
 However, printing the result to the serial port at 9600 baud takes around a millisecond per character. Thus we are dropping pulses while writing to the serial port.
 
-With the motor running, with 5v injected, the frequency on phase A was 1400Hz which translates to  200 rotations per minuteT a jitter and a period of 
+
+With the motor running, a pin was toggled each time the monitor detected a state change. A jitter and a period of inactivity on the toggled pin was observed indicating that there were periods where the microcontroller was missing pulses while transmitting on the UART. The baud rade was set at 9600 baud which means that writing a 
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{Project1RotaryEncoder/oscilloscope_part1_120ms.PNG}
     \caption{Screenshot of the RTB2004 oscilloscope, LED (yellow) is turned on for 120 microsecond at pulse detection. Note that the graphs have been vertically shifted slightly to make them more visible.}
     \label{fig:osc120}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Project1RotaryEncoder/oscilloscope_missing_pulses.PNG}
+    \caption{While writing to the serial port, the Arduino is not polling the input pins, causing dropped pulses. This can be seen in the missing LED(orange) pulses}
+    \label{fig:oscdrop}
 \end{figure}
 
 
