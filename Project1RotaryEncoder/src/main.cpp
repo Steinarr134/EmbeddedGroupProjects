@@ -13,6 +13,9 @@
 #define BAUD 9600
 #define MYUBRR FOSC / 16 / BAUD - 1
 
+// ints to store last state of A and B
+volatile uint8_t last_stateA;
+volatile uint8_t last_stateB;
 
 
 void USART_Init(unsigned int ubrr)
@@ -67,16 +70,18 @@ void print_i(int i)
 
 void set_interrupt_d2()
 {
-  DDRD &= ~(1 << DDD2);   // set the PD2 pin as input
-  PORTD |= (1 << PORTD2); // enable pull-up resistor on PD2
+  DDRD &= ~(1 << DDD3);
+  PORTD |= (1 << PORTD3);
+  last_stateB = PIND & (1<<PIND3);
   EICRA |= (1 << ISC00);  // set INT0 to trigger on ANY logic change
   EIMSK |= (1 << INT0);   // Turns on INT0
   sei();                  // turn on interrupts
 }
 void set_interrupt_d1()
 {
-  DDRD &= ~(1 << DDD3);   // set the PD2 pin as input
-  PORTD |= (1 << PORTD3); // enable pull-up resistor on PD2
+  DDRD &= ~(1 << DDD2);   // set the PD2 pin as input
+  PORTD |= (1 << PORTD2);
+  last_stateA = PIND & (1<<PIND2);
   EICRA |= (1 << ISC10);  // set INT1 to trigger on ANY logic change
   EIMSK |= (1 << INT1);   // Turns on INT1
   sei();                  // turn on interrupts
@@ -98,10 +103,11 @@ ISR(TIMER1_COMPA_vect)
 
 
 Digital_out led(5);
+
+
 int main()
 {
-  DDRB |= (1<<5); 
-  bool part1 = true;
+  bool part1 = false;
   USART_Init(MYUBRR);
   timer.init(50);
   led.init();
@@ -126,11 +132,13 @@ int main()
   }
   else
   {
+    
+    
     set_interrupt_d1();
     set_interrupt_d2();
 
     while (true){
-    _delay_ms(1000);
+    _delay_ms(100);
     USART_Transmit('#');
     print_i(counter);
     }
@@ -141,14 +149,48 @@ int main()
 // only counts up. never down
 ISR(INT0_vect)
 {
-  counter++;
+  // phase A
+  last_stateA = PIND & (1<<PIND2);
+
+  if(PIND & (1<<PIND2)) {
+    if(last_stateB) {
+      counter--;
+    }
+    else {
+      counter++;
+    }
+  }
+  else {
+    if(last_stateB) {
+      counter++;
+    }
+    else {
+      counter--;
+    }
+  }
   PORTB ^= (1<<5);
   
 }
 
 ISR(INT1_vect)
 {
-  /* interrupt handler code here */
-  counter++;
+    // phase B
+  last_stateB = PIND & (1<<PIND3);
+  if(PIND & (1<<PIND3)) {
+    if(last_stateA) {
+      counter++;
+    }
+    else {
+      counter--;
+    }
+  }
+  else {
+    if(last_stateA) {
+      counter--;
+    }
+    else {
+      counter++;
+    }
+  }
   PORTB ^= (1<<5);
 }
