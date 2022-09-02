@@ -13,6 +13,8 @@
 #define BAUD 9600
 #define MYUBRR FOSC / 16 / BAUD - 1
 
+
+
 void USART_Init(unsigned int ubrr)
 {
   /*Set baud rate */
@@ -73,10 +75,10 @@ void set_interrupt_d2()
 }
 void set_interrupt_d1()
 {
-  DDRD &= ~(1 << DDD1);   // set the PD2 pin as input
-  PORTD |= (1 << PORTD1); // enable pull-up resistor on PD2
-  EICRA |= (1 << ISC00);  // set INT0 to trigger on ANY logic change
-  EIMSK |= (1 << INT0);   // Turns on INT0
+  DDRD &= ~(1 << DDD3);   // set the PD2 pin as input
+  PORTD |= (1 << PORTD3); // enable pull-up resistor on PD2
+  EICRA |= (1 << ISC10);  // set INT1 to trigger on ANY logic change
+  EIMSK |= (1 << INT1);   // Turns on INT1
   sei();                  // turn on interrupts
 }
 
@@ -98,9 +100,10 @@ ISR(TIMER1_COMPA_vect)
 Digital_out led(5);
 int main()
 {
+  DDRB |= (1<<5); 
   bool part1 = true;
   USART_Init(MYUBRR);
-  timer.init(500);
+  timer.init(50);
   led.init();
   // input.init(1,true);
 
@@ -116,7 +119,7 @@ int main()
         time_to_print = false;
         print_i(encoder.position());
         // print_i(c);
-        led.toggle();
+        //led.toggle();
 
       }
     }
@@ -139,10 +142,13 @@ int main()
 ISR(INT0_vect)
 {
   counter++;
+  PORTB ^= (1<<5);
+  
 }
 
 ISR(INT1_vect)
 {
   /* interrupt handler code here */
   counter++;
+  PORTB ^= (1<<5);
 }
