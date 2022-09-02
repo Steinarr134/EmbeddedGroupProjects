@@ -59,7 +59,7 @@ We wired the two signals and the signal from the LED pin to an RTB2004 oscillosc
 However, printing the result to the serial port at 9600 baud takes around a millisecond per character. Thus we are dropping pulses while writing to the serial port.
 
 
-With the motor running, a pin was toggled each time the monitor detected a state change. A jitter and a period of inactivity on the toggled pin was observed indicating that there were periods where the microcontroller was missing pulses while transmitting on the UART. The baud rade was set at 9600 baud which means that writing a 
+With the motor running, a pin was toggled each time the monitor detected a state change. A jitter and a period of inactivity on the toggled pin was observed indicating that there were periods where the microcontroller was missing pulses while transmitting on the UART. The baud rade was set at 9600 baud which translates 
 
 \begin{figure}[h]
     \centering
