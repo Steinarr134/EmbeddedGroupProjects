@@ -5,6 +5,7 @@
 #include <timer_msec.h>
 #include <encoder_simple.h>
 #include <hackySerial.h>
+#include <P_controller.h>
 
 // #include <digital_in.h>
 
