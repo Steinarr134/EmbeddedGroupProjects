@@ -54,24 +54,26 @@ int main()
   timer.init(DELTA_T);
   led.init();
   pwm.init();
-  pwm.set(50);
+  pwm.set(0);
   
   
   
   set_interrupt_d1();
   set_interrupt_d2();
-  float kp = 255.0/15000.0*2.0;
-  uint8_t duty = 0;
-  int16_t set_point = 7000;
+  float kp = 255.0/80.0*1.0;
+  uint16_t duty = 0;
+  int16_t set_point = 40;
   float out;
 
   while (true) {
-    //_delay_ms(100);
+    _delay_ms(100);
     delta_counts = delta_counts/10;
-    rpm = delta_counts * 60 / PPR * DELTA_T / GEAR_REDUCTION;  // very accurate but delta_counts is 10x the value
+    rpm = delta_counts * 60 / PPR * DELTA_T / GEAR_REDUCTION;  // accurate but delta_counts is 10x the value
 
-    duty = (uint8_t)(kp * (float)(set_point - rpm));
-    pwm.set(duty);
+    duty = (int16_t)(kp * (float)(set_point - rpm)); // RPM of output shaft, not rpm of input shaft!!
+    if(duty>255)duty=255;
+    if(duty<0) duty=0;
+    pwm.set((uint8_t)duty&0xFF);
     //print_i(duty);
 
 
