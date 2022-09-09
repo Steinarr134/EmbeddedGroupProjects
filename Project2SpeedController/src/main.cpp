@@ -1,16 +1,11 @@
 #include <avr/io.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 #include <avr/interrupt.h>
 #include <digital_out.h>
 #include <timer_msec.h>
 #include <encoder_simple.h>
 #include <hackySerial.h>
 #include <P_controller.h>
-
-// #include <digital_in.h>
-
-
-// part 2 with interrupts
 
 void set_interrupt_d2()
 {
@@ -32,65 +27,36 @@ void set_interrupt_d1()
 }
 
 
-// for part 1
-uint32_t counter = 0; // counts the pulses
-volatile bool time_to_print = false; // printing flag
-Timer_msec timer;  // timer to print every now and then
-Encoder_simple encoder; // create the encoder
-
 ISR(TIMER1_COMPA_vect)
 {
-  time_to_print = true;
-  // led.toggle();
+  ;
 }
-// Part 1
 
 
 Digital_out led(5);
+Timer_msec timer;
+uint32_t counter = 0;
 
 
 int main()
 {
-  bool part1 = false;
   USART_Init(MYUBRR);
   timer.init(50);
   led.init();
-  // input.init(1,true);
+  
+  
+  set_interrupt_d1();
+  set_interrupt_d2();
 
-  if (part1)
-  {
-    encoder.init();
-    bool last = false;
-    int c = 0;
-    while (true){
-      encoder.monitor();
-      if (time_to_print)
-      {
-        time_to_print = false;
-        print_i(encoder.position());
-        // print_i(c);
-        //led.toggle();
-
-      }
-    }
-  }
-  else
-  {
-    
-    
-    set_interrupt_d1();
-    set_interrupt_d2();
-
-    while (true){
+  while (true){
     _delay_ms(100);
     USART_Transmit('#');
     print_i(counter);
-    }
-
   }
+
+  
 }
 
-// only counts up. never down
 ISR(INT0_vect)
 {
   // phase A
