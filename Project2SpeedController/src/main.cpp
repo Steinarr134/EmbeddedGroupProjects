@@ -6,6 +6,7 @@
 #include <encoder_simple.h>
 #include <hackySerial.h>
 #include <P_controller.h>
+#include "PWM2.h"
 
 #define DELTA_T (int32_t)100 // 1/0.01 = 100
 #define PPR (int32_t)(7*2*2) // 7 pulses per phase and triggering on falling as well
@@ -36,9 +37,10 @@ void set_interrupt_d1()
 
 Digital_out led(5);
 Timer_msec timer;
+PWM2 pwm;
 volatile int32_t counter = 0;
 volatile int32_t delta_counts = 0;
-int32_t rpm = 0; // initialize just cause
+int16_t rpm = 0; // initialize just cause
 ISR(TIMER1_COMPA_vect)
 {
   delta_counts = counter;
@@ -51,18 +53,31 @@ int main()
   USART_Init(MYUBRR);
   timer.init(DELTA_T);
   led.init();
+  pwm.init();
+  pwm.set(50);
+  
   
   
   set_interrupt_d1();
   set_interrupt_d2();
-  uint8_t k = 100/15000;
+  float kp = 255.0/15000.0*2.0;
+  uint8_t duty = 0;
+  int16_t set_point = 7000;
+  float out;
 
-  while (true){
-    _delay_ms(100);
+  while (true) {
+    //_delay_ms(100);
     delta_counts = delta_counts/10;
-    rpm = delta_counts * 60 / PPR * DELTA_T / GEAR_REDUCTION;  // not accurate at all, needs fixing
+    rpm = delta_counts * 60 / PPR * DELTA_T / GEAR_REDUCTION;  // very accurate but delta_counts is 10x the value
 
-    print_i(rpm);
+    duty = (uint8_t)(kp * (float)(set_point - rpm));
+    pwm.set(duty);
+    //print_i(duty);
+
+
+
+    
+    //print_i(rpm);
   }
 
   
