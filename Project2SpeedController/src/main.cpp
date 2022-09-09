@@ -7,6 +7,10 @@
 #include <hackySerial.h>
 #include <P_controller.h>
 
+#define DELTA_T (int32_t)100 // 1/0.01 = 100
+#define PPR (int32_t)(7*2*2) // 7 pulses per phase and triggering on falling as well
+#define GEAR_REDUCTION (int32_t)101
+
 void set_interrupt_d2()
 {
   DDRD &= ~(1 << DDD3);
@@ -27,31 +31,38 @@ void set_interrupt_d1()
 }
 
 
-ISR(TIMER1_COMPA_vect)
-{
-  ;
-}
+
 
 
 Digital_out led(5);
 Timer_msec timer;
-uint32_t counter = 0;
+volatile int32_t counter = 0;
+volatile int32_t delta_counts = 0;
+int32_t rpm = 0; // initialize just cause
+ISR(TIMER1_COMPA_vect)
+{
+  delta_counts = counter;
+  counter = 0;
+}
 
 
 int main()
 {
   USART_Init(MYUBRR);
-  timer.init(50);
+  timer.init(DELTA_T);
   led.init();
   
   
   set_interrupt_d1();
   set_interrupt_d2();
+  uint8_t k = 100/15000;
 
   while (true){
     _delay_ms(100);
-    USART_Transmit('#');
-    print_i(counter);
+    delta_counts = delta_counts/10;
+    rpm = delta_counts * 60 / PPR * DELTA_T / GEAR_REDUCTION;  // not accurate at all, needs fixing
+
+    print_i(rpm);
   }
 
   
