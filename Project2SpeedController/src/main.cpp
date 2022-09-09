@@ -60,9 +60,9 @@ int main()
   
   set_interrupt_d1();
   set_interrupt_d2();
-  float kp = 255.0/80.0*1.0;
+  float kp = 255.0/80.0*1.1;
   uint16_t duty = 0;
-  int16_t set_point = 40;
+  int16_t set_point = 60;
   float out;
 
   while (true) {
