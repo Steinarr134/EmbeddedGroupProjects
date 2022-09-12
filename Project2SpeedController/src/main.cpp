@@ -41,13 +41,16 @@ Timer_msec timer;
 PWM2 pwm;
 volatile int32_t counter = 0;
 volatile int32_t delta_counts = 0;
+volatile bool flag = false;
+volatile uint16_t time = 0;
 int16_t rpm = 0; // initialize just cause
+
 ISR(TIMER1_COMPA_vect)
 {
   delta_counts = counter;
   counter = 0;
+  flag = true;
 }
-
 
 int main()
 {
@@ -65,6 +68,26 @@ int main()
   int16_t set_point = 10;
   float kp = 255.0*1.2/float(set_point);
   float out;
+  _delay_ms(500);
+
+  flag = false;
+  while (!flag){}
+  pwm.set(255);
+  // for (int i = 0; i < 100; i++)
+  int i = 0;
+  while (true)
+  {
+    if (flag){
+      i++;
+      flag = false;
+      print_i(delta_counts);
+      if (flag){
+        print_i(1);
+      }
+    }
+    if (i > 100)
+      break;
+  }
 
   while (true) {
     _delay_ms(100); // if duty is set more often it gets stuck at 50% duty
