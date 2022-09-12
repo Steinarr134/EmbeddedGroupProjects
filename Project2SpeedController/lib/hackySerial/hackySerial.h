@@ -31,7 +31,7 @@ void USART_Transmit(unsigned char data)
 }
 
 // helper function to print an integer
-void print_i(int i)
+void print_i(int32_t i)
 {
   // speial case for when i is 0
   if (i == 0){
