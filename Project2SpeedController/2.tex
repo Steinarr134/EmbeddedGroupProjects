@@ -1,0 +1,88 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+%\usepackage[icelandic]{babel}
+\usepackage{graphicx} %package to manage images
+
+\usepackage{hyperref}
+
+\usepackage{xcolor}
+\usepackage{listings}
+
+\colorlet{mygray}{black!30}
+\colorlet{mygreen}{green!60!blue}
+\colorlet{mymauve}{red!60!blue}
+
+\lstset{
+  backgroundcolor=\color{gray!10},  
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  breakatwhitespace=false,      
+  breaklines=true,                
+  captionpos=b,                    
+  commentstyle=\color{mygreen}, 
+  extendedchars=true,              
+  frame=single,                   
+  keepspaces=true,             
+  keywordstyle=\color{blue},      
+  language=c++,                 
+  numbers=none,                
+  numbersep=5pt,                   
+  numberstyle=\tiny\color{blue}, 
+  rulecolor=\color{mygray},        
+  showspaces=false,               
+  showtabs=false,                 
+  stepnumber=5,                  
+  stringstyle=\color{mymauve},    
+  tabsize=3,                                     
+  title=\lstname 
+}
+
+\title{Embedded Group Project}
+\author{Steinarr Hrafn Höskuldsson\\
+Arnþór Gíslason\\
+Reykjavik University}
+\date{September 2022}
+
+
+\newcommand{\mycomment}[1]{}
+
+\begin{document}
+\maketitle
+ % how to comment, input image and code
+\mycomment{
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{LAB3/Basic1.png}
+    \caption{"Switch test" Breadboard set up}
+    \label{fig:Switch_test}
+\end{figure}
+
+\lstinputlisting[caption=Defining 'ColorMatch' state, label={lst:colormatch}, language=Python, firstline=44, lastline=52]{LAB3/Basic.py}
+
+}
+
+\section*{Part 1}
+A timer was configured to run every 10 ms and move the counted pulses into a seperate variable called 'delta\_counts'. It also sets a flag that it has run.
+
+Note: I think from the project description that we need to move the interrupt stuff into it's own implementation package. And initilize it similar to what we are doing with digital\_out and such.
+
+\section*{Part 2}
+The motor power wires were connected to the motor controllers A01 and A02 pins. The Motor controllers STBY pin was pulled high. The VM pin was connected to a power supply set to 6V, the Vcc pin was connected to the Arduinos 5V pin, the Ain1 pin on the motor controller was connected to the ARduinos 5V pin and finally pin D11 on the Arduino was connected to the motor controllers PWMA input pin. 
+A program was written that sets the power going to the motor to full and then prints the rpm value of the outout shaft every 10 ms.
+The printed values can be seen in appendix \ref{appendix:motorspeedtable}. Python's matplotlib library was used to plot the values. The motor reaches max speed of 65 RPM after 
+
+\maketitle
+
+\section*{Appendix}
+\appendix
+\section{Code}\label{appendix:code}
+
+\lstinputlisting[caption=encoder\_simple.h]{Project1RotaryEncoder/src/encoder_simple.h}
+
+\lstinputlisting[caption=timer\_msec.cpp]{Project1RotaryEncoder/src/encoder_simple.cpp}
+
+\lstinputlisting[caption=main.cpp]{Project1RotaryEncoder/src/main.cpp}
+
+\end{document}
