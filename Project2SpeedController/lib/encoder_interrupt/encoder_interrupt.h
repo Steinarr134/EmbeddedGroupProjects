@@ -1,0 +1,17 @@
+class Encoder_interrupt
+{
+public:
+    Encoder_interrupt();
+    void init();
+    long position();
+    void pin1();
+    void pin2();
+    void reset();
+
+private:
+    long counter;
+    bool last_state1;
+    bool last_state2;
+    void set_interrupt_d1();
+    void set_interrupt_d2();
+};

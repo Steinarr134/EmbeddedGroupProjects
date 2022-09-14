@@ -7,35 +7,15 @@
 #include <hackySerial.h>
 #include <P_controller.h>
 #include "PWM2.h"
+#include <encoder_interrupt.h>
 
 #define DELTA_T (int32_t)10 
 #define INV_DELTA_T (int32_t)100 // 1/0.01 = 100
 #define PPR (int32_t)(7*2*2) // 7 pulses per phase and triggering on falling as well
 #define GEAR_REDUCTION (int32_t)101
 
-void set_interrupt_d2()
-{
-  DDRD &= ~(1 << DDD3);
-  PORTD |= (1 << PORTD3);
-  last_stateB = PIND & (1<<PIND3);
-  EICRA |= (1 << ISC00);  // set INT0 to trigger on ANY logic change
-  EIMSK |= (1 << INT0);   // Turns on INT0
-  sei();                  // turn on interrupts
-}
-void set_interrupt_d1()
-{
-  DDRD &= ~(1 << DDD2);   // set the PD2 pin as input
-  PORTD |= (1 << PORTD2);
-  last_stateA = PIND & (1<<PIND2);
-  EICRA |= (1 << ISC10);  // set INT1 to trigger on ANY logic change
-  EIMSK |= (1 << INT1);   // Turns on INT1
-  sei();                  // turn on interrupts
-}
 
-
-
-
-
+Encoder_interrupt encoder;
 Digital_out led(5);
 Timer_msec timer;
 PWM2 pwm;
@@ -47,8 +27,8 @@ int16_t rpm = 0; // initialize just cause
 
 ISR(TIMER1_COMPA_vect)
 {
-  delta_counts = counter;
-  counter = 0;
+  delta_counts = encoder.position();
+  encoder.reset();
   flag = true;
 }
 
@@ -61,8 +41,8 @@ int main()
   
   
   
-  set_interrupt_d1();
-  set_interrupt_d2();
+  // set_interrupt_d1();
+  // set_interrupt_d2();
   //float kp = 255.0/80.0*1.2;
   uint16_t duty = 0;
   int16_t set_point = 10;
@@ -105,48 +85,10 @@ int main()
 
 ISR(INT0_vect)
 {
-  // phase A
-  last_stateA = PIND & (1<<PIND2);
-
-  if(PIND & (1<<PIND2)) {
-    if(last_stateB) {
-      counter--;
-    }
-    else {
-      counter++;
-    }
-  }
-  else {
-    if(last_stateB) {
-      counter++;
-    }
-    else {
-      counter--;
-    }
-  }
-  PORTB ^= (1<<5);
-  
+  encoder.pin1();
 }
 
 ISR(INT1_vect)
 {
-    // phase B
-  last_stateB = PIND & (1<<PIND3);
-  if(PIND & (1<<PIND3)) {
-    if(last_stateA) {
-      counter++;
-    }
-    else {
-      counter--;
-    }
-  }
-  else {
-    if(last_stateA) {
-      counter--;
-    }
-    else {
-      counter++;
-    }
-  }
-  PORTB ^= (1<<5);
+  encoder.pin2();
 }
