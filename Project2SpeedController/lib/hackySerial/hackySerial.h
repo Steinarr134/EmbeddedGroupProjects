@@ -38,19 +38,7 @@ void println(){
   USART_Transmit((unsigned char)10);
 }
 
-void print_3_numbers(int32_t a, int32_t b, int32_t c)
-{
-  print_i(a);
-  print_one('\t');
-  print_i(b);
-  print_one('\t');
-  print_i(c);
-  print_one('\n');
-}
-void print_i_ln(int32_t i){
-  print_i(i);
-  println();
-}
+
 
 // helper function to print an integer
 void print_i(int32_t i)
@@ -76,4 +64,19 @@ void print_i(int32_t i)
       leading_zeros_done = true;
     }
   }
+}
+
+void print_3_numbers(int32_t a, int32_t b, int32_t c)
+{
+  print_i(a);
+  print_one('\t');
+  print_i(b);
+  print_one('\t');
+  print_i(c);
+  print_one('\n');
+}
+void print_i_ln(int32_t i)
+{
+  print_i(i);
+  println();
 }
