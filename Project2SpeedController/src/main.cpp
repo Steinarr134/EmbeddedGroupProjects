@@ -8,6 +8,8 @@
 #include <P_controller.h>
 #include "PWM2.h"
 #include <encoder_interrupt.h>
+#include "speedometer.h"
+
 
 #define DELTA_T (int32_t)10 
 #define INV_DELTA_T (int32_t)100 // 1/0.01 = 100
@@ -19,6 +21,7 @@ Encoder_interrupt encoder;
 Digital_out led(5);
 Timer_msec timer;
 PWM2 pwm;
+Speedo speedo(DELTA_T);
 volatile int32_t counter = 0;
 volatile int32_t delta_counts = 0;
 volatile bool flag = false;
@@ -27,8 +30,7 @@ int16_t rpm = 0; // initialize just cause
 
 ISR(TIMER1_COMPA_vect)
 {
-  delta_counts = encoder.position();
-  encoder.reset();
+  speedo.reg(encoder.position());
   flag = true;
 }
 
@@ -60,7 +62,7 @@ int main()
     if (flag){
       i++;
       flag = false;
-      print_i(delta_counts);
+      print_i(speedo.speed());
       if (flag){
         print_i(1);
       }
