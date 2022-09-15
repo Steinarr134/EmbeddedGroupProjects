@@ -48,6 +48,7 @@ int main()
   uint16_t duty = 0;
   int16_t set_point = 20;
   float kp = 255.0*0.5/float(set_point);
+  /*
   _delay_ms(500);
 
   flag = false;
@@ -67,8 +68,8 @@ int main()
     }
     if (i > 100)
       break;
-  }
-
+  }*/
+  int counter = 0;
   while (true) {
     _delay_ms(100); // if duty is set more often it gets stuck at 50% duty
     delta_counts = delta_counts/10; //  delta_counts is 10x the value for some reason
@@ -78,6 +79,15 @@ int main()
     if(duty>255)duty=255;
     if(duty<0) duty=0;
     pwm.set((uint8_t)duty&0xFF);
+    if(counter++ > 50) {
+      counter = 0;
+      if(set_point == 20) {
+          set_point = 40;
+      }
+      else{
+        set_point = 20;
+      }
+    }
   }
 
   
