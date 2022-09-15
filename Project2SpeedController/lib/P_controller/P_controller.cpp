@@ -4,5 +4,9 @@ P_controller::P_controller(double K_p) {
 }
 
 double P_controller::update(double ref, double actual){
-  return k_p*(ref-actual);
+  
+  int u=k_p*(ref-actual);
+  if (u>255) u=255;
+  if (u<0) u=0;
+  return u;
 }

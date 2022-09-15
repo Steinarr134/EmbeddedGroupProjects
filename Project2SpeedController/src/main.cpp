@@ -16,11 +16,17 @@
 #define PPR (int32_t)(7*2*2) // 7 pulses per phase and triggering on falling as well
 #define GEAR_REDUCTION (int32_t)101
 
+uint16_t duty = 0;
+int16_t set_point = 5000;
+float kp = .8*255.0/float(set_point); //convert from rpm to suitable pwm input 
+
+
 
 Encoder_interrupt encoder;
 Digital_out led(5);
 Timer_msec timer;
 PWM2 pwm;
+P_controller controller(kp);
 Speedo speedo(DELTA_T);
 volatile int32_t counter = 0;
 volatile int32_t delta_counts = 0;
@@ -42,9 +48,7 @@ int main()
   // set_interrupt_d1();
   // set_interrupt_d2();
   //float kp = 255.0/80.0*1.2;
-  uint16_t duty = 0;
-  int16_t set_point = 5000;
-  float kp = 255.0*.8/float(set_point);
+
   /*
   _delay_ms(500);
 
@@ -76,12 +80,10 @@ int main()
     delta_counts = delta_counts; 
     rpm = delta_counts * 60 / PPR * INV_DELTA_T;  // accurate
 
-    duty = (int16_t)(kp * (float)(set_point - rpm)); // RPM of output shaft, not rpm of input shaft!!
+    duty = (int16_t)controller.update(set_point, rpm); // RPM of output shaft, not rpm of input shaft!!
     print_i(delta_counts);
     println();
     
-    if(duty>255)duty=255;
-    if(duty<0) duty=0;
     duty = (uint8_t)duty&0xFF;
     if(duty != oldDuty) {
       pwm.set(duty);
