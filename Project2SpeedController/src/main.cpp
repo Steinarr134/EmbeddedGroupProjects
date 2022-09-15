@@ -25,12 +25,6 @@ volatile bool flag = false;
 volatile uint16_t time = 0;
 int16_t rpm = 0; // initialize just cause
 
-ISR(TIMER1_COMPA_vect)
-{
-  delta_counts = encoder.position();
-  encoder.reset();
-  flag = true;
-}
 
 int main()
 {
@@ -46,8 +40,8 @@ int main()
   // set_interrupt_d2();
   //float kp = 255.0/80.0*1.2;
   uint16_t duty = 0;
-  int16_t set_point = 20;
-  float kp = 255.0*0.5/float(set_point);
+  int16_t set_point = 5000;
+  float kp = 255.0*.8/float(set_point);
   /*
   _delay_ms(500);
 
@@ -70,24 +64,35 @@ int main()
       break;
   }*/
   int counter = 0;
+  uint8_t oldDuty = 0;
   while (true) {
-    _delay_ms(100); // if duty is set more often it gets stuck at 50% duty
-    delta_counts = delta_counts/10; //  delta_counts is 10x the value for some reason
-    rpm = delta_counts * 60 / PPR * INV_DELTA_T / GEAR_REDUCTION;  // accurate
+    //_delay_ms(100); // if duty is set more often it gets stuck at 50% duty
+    if(delta_counts <0) {
+      delta_counts = -delta_counts;
+    }
+    delta_counts = delta_counts; 
+    rpm = delta_counts * 60 / PPR * INV_DELTA_T;  // accurate
 
     duty = (int16_t)(kp * (float)(set_point - rpm)); // RPM of output shaft, not rpm of input shaft!!
+    print_i(delta_counts);
+    println();
+    
     if(duty>255)duty=255;
     if(duty<0) duty=0;
-    pwm.set((uint8_t)duty&0xFF);
-    if(counter++ > 50) {
+    duty = (uint8_t)duty&0xFF;
+    if(duty != oldDuty) {
+      pwm.set(duty);
+    }
+    /*
+    if(counter++ > 5000) {
       counter = 0;
-      if(set_point == 20) {
-          set_point = 40;
+      if(set_point == 5000) {
+          set_point = 10000;
       }
       else{
-        set_point = 20;
+        set_point = 5000;
       }
-    }
+    }*/
   }
 
   
@@ -101,4 +106,11 @@ ISR(INT0_vect)
 ISR(INT1_vect)
 {
   encoder.pin2();
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+  delta_counts = encoder.position();
+  encoder.reset();
+  flag = true;
 }
