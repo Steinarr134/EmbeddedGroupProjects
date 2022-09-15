@@ -5,6 +5,7 @@
 #include <timer_msec.h>
 #include <encoder_simple.h>
 #include <hackySerial.h>
+
 #include <P_controller.h>
 #include "PWM2.h"
 #include <encoder_interrupt.h>
@@ -19,7 +20,7 @@
 uint16_t duty = 0;
 int16_t set_point = 5000;
 float kp = .8*255.0/float(set_point); //convert from rpm to suitable pwm input 
-
+//TODO: make KP gain independent of set_point
 
 
 Encoder_interrupt encoder;
@@ -73,7 +74,7 @@ int main()
   int counter = 0;
   uint8_t oldDuty = 0;
   while (true) {
-    //_delay_ms(100); // if duty is set more often it gets stuck at 50% duty
+    
     if(delta_counts <0) {
       delta_counts = -delta_counts;
     }
@@ -88,6 +89,8 @@ int main()
     if(duty != oldDuty) {
       pwm.set(duty);
     }
+
+    
     /*
     if(counter++ > 5000) {
       counter = 0;
