@@ -1,6 +1,7 @@
 # vscode
 **/.vscode/
 *.checksum
+*.code-workspace
 
 # Prerequisites
 *.d
