@@ -38,6 +38,7 @@ int main()
   timer.init(DELTA_T);
   pwm.init();
   pwm.set(0);
+  encoder.init();
   
   
   
@@ -45,9 +46,8 @@ int main()
   // set_interrupt_d2();
   //float kp = 255.0/80.0*1.2;
   uint16_t duty = 0;
-  int16_t set_point = 10;
-  float kp = 255.0*1.2/float(set_point);
-  float out;
+  int16_t set_point = 20;
+  float kp = 255.0*0.5/float(set_point);
   _delay_ms(500);
 
   flag = false;
