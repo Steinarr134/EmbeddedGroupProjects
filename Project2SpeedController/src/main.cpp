@@ -38,7 +38,7 @@ int16_t rpm = 0; // initialize just cause
 
 int main()
 {
-  USART_Init(MYUBRR);
+  USART_Init(0); // 1megabaud
   timer.init(DELTA_T);
   pwm.init();
   pwm.set(0);
@@ -71,7 +71,7 @@ int main()
     if (i > 100)
       break;
   }*/
-  int counter = 0;
+  unsigned int counter = 0;
   uint8_t oldDuty = 0;
   while (true) {
     
@@ -79,20 +79,17 @@ int main()
       delta_counts = -delta_counts;
     }
     delta_counts = delta_counts; 
-    rpm = delta_counts * 60 / PPR * INV_DELTA_T;  // accurate
+    rpm = delta_counts * 60 / PPR * INV_DELTA_T;  
 
-    duty = (int16_t)controller.update(set_point, rpm); // RPM of output shaft, not rpm of input shaft!!
+    duty = (int16_t)controller.update(set_point, rpm); // RPM of input shaft, not rpm of output shaft!!
     print_i(delta_counts);
     println();
     
     duty = (uint8_t)duty&0xFF;
-    if(duty != oldDuty) {
+    if(duty != oldDuty) { // I think the timer wasn't happy when compare register was set too often. 
       pwm.set(duty);
     }
-
-    
-    /*
-    if(counter++ > 5000) {
+    if(counter++>10000) {
       counter = 0;
       if(set_point == 5000) {
           set_point = 10000;
@@ -100,10 +97,8 @@ int main()
       else{
         set_point = 5000;
       }
-    }*/
+    }
   }
-
-  
 }
 
 ISR(INT0_vect)
