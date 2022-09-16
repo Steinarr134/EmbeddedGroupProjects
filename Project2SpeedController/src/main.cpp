@@ -13,13 +13,16 @@
 
 
 #define DELTA_T (int32_t)10 
-#define INV_DELTA_T (int32_t)100 // 1/0.01 = 100
+#define INV_DELTA_T (int32_t)1.0/((float)DELTA_T/1000.0)
 #define PPR (int32_t)(7*2*2) // 7 pulses per phase and triggering on falling as well
 #define GEAR_REDUCTION (int32_t)101
+#define MAX_PWM 255
+#define MAX_RPM 15000
 
 uint16_t duty = 0;
-int16_t set_point = 5000;
-float kp = .8*255.0/float(set_point); //convert from rpm to suitable pwm input 
+int16_t set_point = 2500;
+float kp = 4; // gain
+
 //TODO: make KP gain independent of set_point
 
 
@@ -27,7 +30,7 @@ Encoder_interrupt encoder;
 Digital_out led(5);
 Timer_msec timer;
 PWM2 pwm;
-P_controller controller(kp);
+P_controller controller(kp, MAX_RPM, MAX_PWM);
 Speedo speedo(DELTA_T);
 volatile int32_t counter = 0;
 volatile int32_t delta_counts = 0;
@@ -82,13 +85,17 @@ int main()
     rpm = delta_counts * 60 / PPR * INV_DELTA_T;  
 
     duty = (int16_t)controller.update(set_point, rpm); // RPM of input shaft, not rpm of output shaft!!
-    print_i(delta_counts);
-    println();
+    //print_i(delta_counts);
+    //println();
     
     duty = (uint8_t)duty&0xFF;
-    if(duty != oldDuty) { // I think the timer wasn't happy when compare register was set too often. 
+    if(flag) {
+      print_3_numbers(set_point, rpm, duty);
       pwm.set(duty);
+      flag = false;
     }
+    //if(duty != oldDuty) { // I think the timer wasn't happy when compare register was set too often. 
+    //}
     if(counter++>10000) {
       counter = 0;
       if(set_point == 5000) {
