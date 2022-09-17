@@ -78,7 +78,8 @@ When the main loops get a chance, it will take delta\_counts and calculate the r
 
 Where delta\_counts is the pulses counted during the \timerinterval period. PPR is how many pulses per revolution we expect, 28 in this case and INV\_DELTA\_T is inverse of \timerinterval, to get by without using floats or doubles in the program.
 
-\subsection{}
+\subsection{resolution of rotary encoder}
+    the magnet on the rotary encoder produces 7 pulses per revolution, the encoder has two separate sensors and will produce two phases, phase A and phase B. The counter triggers on both falling and rising transition translating to $7\cdot2\cdot2$  pulses per revolution or 28 in total. 
 
 \section{Part 2}
 \subsection{Measuring the time constant of the system}
@@ -174,10 +175,12 @@ The program keeps the set speed at 10.000 pulses per second for a few seconds an
     \label{fig:step_response}
 \end{figure}
 
+
+\newpage
 \section*{Appendix}
 \appendix
 \section{Motor Speed Up Measurements}\label{appendix:motorspeedtable}
-\begin{table}[h]
+
 \begin{tabular}{ll}
 RPM & ms \\
 0           & 10        \\
@@ -205,12 +208,11 @@ RPM & ms \\
 65          & 230       \\
 64          & 240      
 \end{tabular}
-\end{table}
+
+\newpage
 \section{Code}\label{appendix:code}
 
-This is not the correct code!
-
-\lstinputlisting[caption=encoder\_simple.h]{Project1RotaryEncoder/src/encoder_simple.h}
+\lstinputlisting[caption=main program used to produce the step response]{Project2SpeedController/src/main.cpp}
 
 \lstinputlisting[caption=timer\_msec.cpp]{Project1RotaryEncoder/src/encoder_simple.cpp}
 
