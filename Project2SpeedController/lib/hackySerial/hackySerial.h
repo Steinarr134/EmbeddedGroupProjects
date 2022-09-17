@@ -46,7 +46,7 @@ void print_i(int32_t i)
   // speial case for when i is 0
   if (i == 0){
     USART_Transmit('0');
-    USART_Transmit((unsigned char)10);
+    //USART_Transmit((unsigned char)10);
     return;
   }
   // if negative print minus sign and then just as if it were positive
