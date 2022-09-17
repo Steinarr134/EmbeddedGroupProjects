@@ -56,13 +56,14 @@ void print_i(int32_t i)
   }
   // don't print leading zeros, however,do print zeros that are not leading
   bool leading_zeros_done = false;
+  int m = 10000;
   for (int j = 4; j>= 0;j--) // supports 5 digit numbers (ints can't be larger)
   {
-    int m = pow(10, j);
     if (leading_zeros_done || i/m > 0){
       USART_Transmit((unsigned char)(((i/m)%10) + 48));
       leading_zeros_done = true;
     }
+    m /= 10;
   }
 }
 
