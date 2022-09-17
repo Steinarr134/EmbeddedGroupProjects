@@ -78,8 +78,8 @@ When the main loops get a chance, it will take delta\_counts and calculate the r
 
 Where delta\_counts is the pulses counted during the \timerinterval period. PPR is how many pulses per revolution we expect, 28 in this case and INV\_DELTA\_T is inverse of \timerinterval, to get by without using floats or doubles in the program.
 
-\subsection{resolution of rotary encoder}
-    the magnet on the rotary encoder produces 7 pulses per revolution, the encoder has two separate sensors and will produce two phases, phase A and phase B. The counter triggers on both falling and rising transition translating to $7\cdot2\cdot2$  pulses per revolution or 28 in total. 
+\subsection{Resolution of rotary encoder}
+    The magnet on the rotary encoder produces 7 pulses per revolution, the encoder has two separate sensors and will produce two phases, phase A and phase B. The counter triggers on both falling and rising transition translating to $7\cdot2\cdot2$  pulses per revolution or 28 in total. 
 
 \section{Part 2}
 \subsection{Measuring the time constant of the system}
@@ -94,7 +94,7 @@ The printed values can be seen in appendix \ref{appendix:motorspeedtable}. Pytho
     \label{fig:motor response}
 \end{figure}
 \subsection{Pulse width modulation}
-The pulse width modulation was implemented using atmega328's Timer2 in phase correct PWM mode set at about 1kHz. The timer is 8bit which gives a resolution of about  0-255, where 0 is 0\% PWM and 255 is 100\% PWM. 
+The pulse width modulation was implemented using atmega328's Timer2 in phase correct PWM mode set at about 1kHz. The timer is 8bit which gives a resolution of about  1/255, where 0 is 0\% PWM and 255 is 100\% PWM. 
 
 \maketitle
 
@@ -149,7 +149,7 @@ The speed controller will also have to :
     \end{description}
     \item Compute speed using a stable time base
     \begin{description}
-    To count the speed we will use a timer that fires an interrupt every 5ms at which point the encoder counter will be read and the speed calculated based on the change since last run.
+    To count the speed we will use a timer that fires an interrupt every \timerinterval at which point the encoder counter will be read and the speed calculated based on the change since last run.
     \end{description}
     \item Update the control output at a required rate
     \begin{description}
@@ -165,16 +165,26 @@ The speed controller will also have to :
 \end{itemize}
 
 \section{Part 4}
-A P\_controller class was implemented and a program that uses the controller class to control the speed of the motor was written. The code can be seen in Appendix [REF??]. 
+A P\_controller class was implemented and a program that uses the controller class to control the speed of the motor was written. The code can be seen in Appendix \ref{appendix:motorspeedtable}. 
 The program keeps the set speed at 10.000 pulses per second for a few seconds and then drops it to 5.000 pulses per second. Meanwhile it prints the reference value, the measured value and the pwm output. A plot of the step response can be seen in Figure \ref{fig:step_response}.
-
+    Finally, a plot was produced, Figure \ref{fig:load_response}, where the motor was loaded and the response of the p controller could be seen. 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{Project2SpeedController/step_response2.png}
-    \caption{Graph showing the step response of the motor when going from a higher to a lower set point. Set point and actual shown on the primary axis with pwm on the secondary axis}
+    \caption{Graph showing the step response of the motor when going from a higher to a lower set point. Set point and actual shown on the primary axis with the PWM on the secondary axis}
     \label{fig:step_response}
 \end{figure}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\textwidth]{Project2SpeedController/load_response.png}
+    \caption{Graph showing the response of the p controller when the motor is loaded. Set point and actual shown on the primary axis with the PWM on the secondary axis}
+    \label{fig:load_response}
+\end{figure}
+
+A video of the controller in operation can be seen at: 
+\url{https://youtube.com/shorts/JF9CxGmwtUE}
+The repo: \url{https://github.com/Steinarr134/EmbeddedGroupProjects/tree/main/Project2SpeedController}
 
 \newpage
 \section*{Appendix}
