@@ -21,7 +21,7 @@
 uint16_t duty = 0;
 int16_t set_point = 5000;
 double kp = 6; // gain
-double ki = 1;
+double ki = 0.1;
 
 Encoder_interrupt encoder;
 Digital_out led(5);
@@ -62,16 +62,16 @@ int main()
       count++;
     }
 
-    if (count > 1000)
+    if (count > 500)
     { // to vary the set point
       count = 0;
-      if (set_point == 5000)
+      if (set_point == 2500)
       {
-        set_point = 10000;
+        set_point = 5000;
       }
       else
       {
-        set_point = 5000;
+        set_point = 2500;
       }
     }
   }
