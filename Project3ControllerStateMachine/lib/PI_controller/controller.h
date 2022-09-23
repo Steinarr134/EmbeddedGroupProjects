@@ -36,9 +36,9 @@ class PI_controller : controller {
     }
     uint8_t PI_controller::update(double set_point, double actual) {
         double e = set_point - actual;
-        if(u <= 255 && u >= -255) { // only integrate if pwm is less than 100p 
+        //if(u <= 255 && u >= -255) { // only integrate if pwm is less than 100p 
             integral_ += e * delta_t_;
-        }
+        //}
         print_i((int32_t) integral_);
         print_one('\t');
         u=k_p*(e)/max_rpm_ + k_i * integral_;
