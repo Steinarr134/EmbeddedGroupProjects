@@ -13,28 +13,33 @@ class controller {
     uint8_t max_pwm_;
     int32_t integral_;
     double delta_t_;
+    double u;
 };
 
 class PI_controller : controller {
-    PI_controller(double K_p, double K_i, uint16_t max_rpm, uint8_t max_pwm, double delta_t);
-    uint8_t update(double set_point, double actual);
+    public:
+        PI_controller(double K_p, double K_i, uint16_t max_rpm, uint8_t max_pwm, uint8_t delta_t);
+        uint8_t update(double set_point, double actual);
 };
 
 
-    PI_controller::PI_controller(double K_p, double K_i, uint16_t max_rpm, uint8_t max_pwm, double delta_t) {
+    PI_controller::PI_controller(double K_p, double K_i, uint16_t max_rpm, uint8_t max_pwm, uint8_t delta_t) {
         k_p = K_p;
         k_i = K_i;
         max_rpm_ = max_rpm;
         max_pwm_ = max_pwm;
         integral_ = 0;
-        delta_t = delta_t;
+        delta_t = delta_t / 1000.0;
 
     }
     uint8_t PI_controller::update(double set_point, double actual) {
         double e = set_point - actual;
-        integral_ += e * delta_t_;
-        double u=k_p*(e)/max_rpm_ + k_i * integral_;
+        if(u < 255) { // only integrate if pwm is less than 100p 
+            integral_ += e * delta_t_;
+        }
+        u=k_p*(e)/max_rpm_ + k_i * integral_;
         u = u*max_pwm_;
+        if (u <0) u = -u; // todo: negative u should apply current in reverse 
         if (u>255) u=255;
         if (u<0) u=0;
 

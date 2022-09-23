@@ -6,12 +6,12 @@
 #include <encoder_simple.h>
 #include <hackySerial.h>
 
-#include <PI_controller.h>
+#include <controller.h>
 #include "PWM2.h"
 #include <encoder_interrupt.h>
 #include "speedometer.h"
 
-#define DELTA_T (int32_t)5
+#define DELTA_T (uint8_t)5
 #define INV_DELTA_T (int32_t)1.0 / ((float)DELTA_T / 1000.0)
 #define PPR (int32_t)(7 * 2 * 2) // 7 pulses per phase and triggering on falling as well
 #define GEAR_REDUCTION (int32_t)101
@@ -20,14 +20,14 @@
 
 uint16_t duty = 0;
 int16_t set_point = 5000;
-float kp = 6; // gain
-float ki = 1;
+double kp = 6; // gain
+double ki = 1;
 
 Encoder_interrupt encoder;
 Digital_out led(5);
 Timer_msec timer;
 PWM2 pwm;
-PI_controller controller(kp, ki, MAX_RPM, MAX_PWM);
+PI_controller controller(kp, ki, MAX_RPM, MAX_PWM, DELTA_T);
 volatile int32_t counter = 0;
 volatile int32_t delta_counts = 0;
 volatile bool flag = false;
