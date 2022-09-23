@@ -31,22 +31,26 @@ class PI_controller : controller {
         max_rpm_ = max_rpm;
         max_pwm_ = max_pwm;
         integral_ = 0;
-        delta_t = (double)delta_t / 1000.0;
+        delta_t_ = (double)delta_t / 1000.0;
 
     }
     uint8_t PI_controller::update(double set_point, double actual) {
         double e = set_point - actual;
-        //if(u < 255) { // only integrate if pwm is less than 100p 
-            //integral_ += e * delta_t_;
-            integral_ += e * 0.005;
-        //}
+        if(u <= 255 && u >= -255) { // only integrate if pwm is less than 100p 
+            integral_ += e * delta_t_;
+        }
         print_i((int32_t) integral_);
         print_one('\t');
         u=k_p*(e)/max_rpm_ + k_i * integral_;
-        u = u*max_pwm_;
-        if (u>255) u=255;
-        if (u<0) u=0;
+        if (u>255){ 
+            return 255; 
+        }
+        else if (u<0) {
+            return 0;
+        }
+        else { 
+            return u*max_pwm_;
+        }
 
-        return (uint8_t)u;
         
     }
