@@ -19,9 +19,9 @@
 #define MAX_RPM 15000
 
 uint16_t duty = 0;
-int16_t set_point = 5000;
-double kp = 6; // gain
-double ki = 0.1;
+int16_t set_point = 6000;
+double kp = 10; // gain
+double ki = 5.4;//0.01;
 
 Encoder_interrupt encoder;
 Digital_out led(5);
