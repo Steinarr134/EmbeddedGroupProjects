@@ -21,10 +21,10 @@ void Timer_usec::reset() {
 
 
 bool Timer_usec::overflow() {
-    bool tmp = !!(TIFR1 & TOV1);
+    bool tmp = (TIFR1 & TOV1);
     if(tmp){
-        TIFR1 |= TOV1; // clear overflow flag, yes it's supposed to be 1 to clear: "Alternatively, TOV1 can be\
-         cleared by writing a logic one to its bit location."
+        TIFR1 |= TOV1; // clear overflow flag, yes it's supposed to be 1 to clear: "Alternatively, TOV1 can be
+         //cleared by writing a logic one to its bit location."
     }
     return tmp;
 }

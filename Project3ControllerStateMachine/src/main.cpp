@@ -54,7 +54,8 @@ int main()
         rpm = 0;
       }
       else {
-        rpm = (double)60/((double)28*t);
+        //rpm = (double)60/((double)28*t);
+        rpm = (double)60/((double)14*t);
       }
       duty = (int16_t)controller.update(set_point, rpm); // RPM of input shaft, not rpm of output shaft!!
       print_3_numbers(set_point, rpm, duty);
@@ -89,8 +90,8 @@ ISR(INT0_vect)
 ISR(INT1_vect)
 {
   encoder.pin2();
-  delta_counts = timer_u.get();
-  timer_u.reset();
+  //delta_counts = timer_u.get();
+  //timer_u.reset();
 }
 
 /*ISR(TIMER1_COMPA_vect)
