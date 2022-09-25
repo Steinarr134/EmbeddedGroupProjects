@@ -10,7 +10,7 @@ class Motor_controller : PWM2 {
     */
     public:
     Motor_controller(uint8_t pin1, uint8_t pin2); // only portB allowed 
-    void update(uint16_t pwm);
+    void update(int16_t pwm);
     private:
     uint8_t a1_mask;
     uint8_t a2_mask;
@@ -26,7 +26,7 @@ class Motor_controller : PWM2 {
         this->init();
         
     }
-    void Motor_controller::update(uint16_t pwm) {
+    void Motor_controller::update(int16_t pwm) {
         if(brake) {
             PORTB |= a1_mask|a2_mask;
             this->set(0); // apparently it's enough to have PWM == 0  to brake but we're not very familiar with the PWM generation, maybe it does something weird when pwm == 0;
@@ -34,11 +34,12 @@ class Motor_controller : PWM2 {
         }
         else {
             if(pwm >0) { // clockwise
-                PORTB &= a2_mask;
+                PORTB &= ~a2_mask;
                 PORTB |= a1_mask;
             }
             else { // counterclockwise
-                PORTB &= a1_mask;
+                pwm = -pwm;
+                PORTB &= ~a1_mask;
                 PORTB |= a2_mask;
             }
         }

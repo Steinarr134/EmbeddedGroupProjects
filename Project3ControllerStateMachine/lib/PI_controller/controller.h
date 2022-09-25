@@ -6,13 +6,13 @@ class controller {
     public:
     //controller(double K_p, uint8_t max_rpm, uint8_t max_pwm, double K_i=0, double K_d=0); // why even use polymorphism
     //controller(double K_p, uint8_t max_rpm, uint8_t max_pwm);
-    virtual uint8_t update(double set_point, double actual);   
+    virtual int16_t update(double set_point, double actual);   
     protected:
     double k_p;
     double k_i;
     double k_d;
     int16_t max_rpm_;
-    uint8_t max_pwm_;
+    int16_t max_pwm_;
     double integral_;
     double delta_t_;
     double u;
@@ -20,12 +20,12 @@ class controller {
 
 class PI_controller : controller {
     public:
-        PI_controller(double K_p, double K_i, uint16_t max_rpm, uint8_t max_pwm, uint8_t delta_t);
-        uint8_t update(double set_point, double actual);
+        PI_controller(double K_p, double K_i, uint16_t max_rpm, int16_t max_pwm, uint8_t delta_t);
+        int16_t update(double set_point, double actual);
 };
 
 
-    PI_controller::PI_controller(double K_p, double K_i, uint16_t max_rpm, uint8_t max_pwm, uint8_t delta_t) {
+    PI_controller::PI_controller(double K_p, double K_i, uint16_t max_rpm, int16_t max_pwm, uint8_t delta_t) {
         k_p = K_p;
         k_i = K_i;
         max_rpm_ = max_rpm;
@@ -34,7 +34,7 @@ class PI_controller : controller {
         delta_t_ = (double)delta_t / 1000.0;
 
     }
-    uint8_t PI_controller::update(double set_point, double actual) {
+    int16_t PI_controller::update(double set_point, double actual) {
         double tmp_u;
         double e = set_point - actual;
         
@@ -48,11 +48,11 @@ class PI_controller : controller {
         print_one('\t');
         u=k_p*(e) + k_i * integral_;
         tmp_u = u*max_pwm_/max_rpm_;
-        if (tmp_u>255){ 
-            return 255; 
+        if (tmp_u>max_pwm_){ 
+            return max_pwm_; 
         }
-        else if (tmp_u<-255) {
-            return -255;
+        else if (tmp_u<-max_pwm_) {
+            return -max_pwm_;
         }
         else { 
             return tmp_u;

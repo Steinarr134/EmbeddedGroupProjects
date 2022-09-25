@@ -17,7 +17,7 @@
 #define MAX_PWM 255
 #define MAX_RPM 15000
 
-uint16_t duty = 0;
+int16_t duty = 0;
 int16_t set_point = 6000;
 double kp = 10; // gain
 double ki = 5.4;//0.01;
@@ -25,7 +25,7 @@ double ki = 5.4;//0.01;
 Encoder_interrupt encoder;
 Digital_out led(5);
 Timer_msec timer;
-Motor_controller motor_controller(3, 4);
+Motor_controller motor_controller(0, 1);
 PI_controller controller(kp, ki, MAX_RPM, MAX_PWM, DELTA_T);
 volatile int32_t counter = 0;
 volatile int32_t delta_counts = 0;
