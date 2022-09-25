@@ -1,7 +1,6 @@
 #ifndef MOTOR_CONTROLLER_H_
 #define MOTOR_CONTROLLER_H_
 #include "PWM2.h"
-#include "digital_out.h"
 
 PWM2 pwm;
 class Motor_controller : PWM2 {
@@ -11,15 +10,39 @@ class Motor_controller : PWM2 {
     */
     public:
     Motor_controller(uint8_t pin1, uint8_t pin2); // only portB allowed 
-    void update();
+    void update(uint16_t pwm);
     private:
-    Digital_out a1;
-    Digital_out a2;
+    uint8_t a1_mask;
+    uint8_t a2_mask;
+    uint8_t brake;
 };
 
-    Motor_controller::Motor_controller(uint8_t pin1, uint8_t pin2){
-        a1(pin1);
-        a2(pin2);
+    Motor_controller::Motor_controller(uint8_t pin1, uint8_t pin2){ // can't find how to use Digital_out
+        a1_mask = (1<<pin1);
+        a2_mask = (1<<pin2);
+        DDRB |= a1_mask|a2_mask;
+        PORTB &= ~a1_mask;
+        PORTB &= ~a2_mask;
+        this->init();
+        
+    }
+    void Motor_controller::update(uint16_t pwm) {
+        if(brake) {
+            PORTB |= a1_mask|a2_mask;
+            this->set(0); // apparently it's enough to have PWM == 0  to brake but we're not very familiar with the PWM generation, maybe it does something weird when pwm == 0;
+            return;
+        }
+        else {
+            if(pwm >0) { // clockwise
+                PORTB &= a2_mask;
+                PORTB |= a1_mask;
+            }
+            else { // counterclockwise
+                PORTB &= a1_mask;
+                PORTB |= a2_mask;
+            }
+        }
+        this->set(pwm);
         
     }
 
