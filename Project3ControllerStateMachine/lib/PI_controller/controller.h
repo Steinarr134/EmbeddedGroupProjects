@@ -41,18 +41,18 @@ class PI_controller : controller {
         //if(u <= 255 && u >= -255) { // only integrate if pwm is less than 100p 
             integral_ += e * delta_t_;
         //}
-        /*
+        
         print_i((int32_t) u);
         print_one('\t');
         print_i((int32_t) integral_);
-        print_one('\t');*/
+        print_one('\t');
         u=k_p*(e) + k_i * integral_;
         tmp_u = u*max_pwm_/max_rpm_;
         if (tmp_u>255){ 
             return 255; 
         }
-        else if (tmp_u<0) {
-            return 0;
+        else if (tmp_u<-255) {
+            return -255;
         }
         else { 
             return tmp_u;
