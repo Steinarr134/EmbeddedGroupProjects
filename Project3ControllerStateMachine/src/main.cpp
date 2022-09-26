@@ -7,9 +7,16 @@
 #include <hackySerial.h>
 
 #include <controller.h>
-#include "PWM2.h"
+#include <PWM2.h>
 #include <encoder_interrupt.h>
-#include "speedometer.h"
+#include <speedometer.h>
+
+#include <state.h>
+#include <state_stopped.h>
+#include <state_pre_op.h>
+#include <state_operation.h>
+#include <state_initialization.h>
+
 
 #define DELTA_T (uint8_t)5
 #define INV_DELTA_T (int32_t)1.0 / ((float)DELTA_T / 1000.0)
@@ -35,6 +42,8 @@ volatile uint16_t time = 0;
 int32_t rpm = 0; // initialize just cause
 unsigned int count = 0;
 int32_t dc;
+
+
 
 int main()
 {
