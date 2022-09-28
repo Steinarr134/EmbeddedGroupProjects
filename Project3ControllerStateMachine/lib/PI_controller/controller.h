@@ -38,14 +38,15 @@ class PI_controller : controller {
         double tmp_u;
         double e = set_point - actual;
         
-        //if(u <= 255 && u >= -255) { // only integrate if pwm is less than 100p 
+        //windup guard needs to account for scaling 
+        //if(u < 255 && u > -255) { // only integrate if pwm is less than 100p 
             integral_ += e * delta_t_;
         //}
         
-        print_i((int32_t) u);
+        /*print_i((int32_t) u);
         print_one('\t');
         print_i((int32_t) integral_);
-        print_one('\t');
+        print_one('\t');*/
         u=k_p*(e) + k_i * integral_;
         tmp_u = u*max_pwm_/max_rpm_;
         if (tmp_u>max_pwm_){ 
