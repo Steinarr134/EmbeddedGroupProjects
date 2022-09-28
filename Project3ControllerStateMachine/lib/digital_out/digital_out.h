@@ -1,3 +1,5 @@
+#ifndef DIGITAL_OUT_H
+#define DIGITAL_OUT_H
 #include <stdint.h>
 
 class Digital_out
@@ -17,3 +19,4 @@ private:
 };
 
 
+#endif
