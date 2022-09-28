@@ -84,8 +84,8 @@ int main()
       count++;
       PORTC ^= (1<<PORTC0); // A0
     }
-    set_point = 0;
-    continue;
+    //set_point = 0; // try setting set point to 0 and turn the motor
+    //continue;
     if (count > 500)
     { // to vary the set point
       count = 0;
@@ -111,17 +111,12 @@ ISR(INT0_vect)
 ISR(INT1_vect)
 {
   encoder.pin2();
-  //delta_counts = timer_u.get();
-  //timer_u.reset();
 }
 
 ISR(TIMER0_COMPA_vect)
 {
-  //delta_counts = encoder.position();
-  //encoder.reset();
   flag = true;
   TCNT0 = 0;
-  //PORTC ^= (1<<PORTC0); // A0
 } 
 
 /*

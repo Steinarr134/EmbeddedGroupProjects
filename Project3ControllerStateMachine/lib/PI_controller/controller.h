@@ -4,8 +4,6 @@
 
 class controller {
     public:
-    //controller(double K_p, uint8_t max_rpm, uint8_t max_pwm, double K_i=0, double K_d=0); // why even use polymorphism
-    //controller(double K_p, uint8_t max_rpm, uint8_t max_pwm);
     virtual int16_t update(double set_point, double actual);   
     protected:
     double k_p;
