@@ -10,8 +10,6 @@
 #include "controller.h" // todo: move PI controller to separate file 
 #include "encoder_interrupt.h"
 #include "motor_controller.h"
-#include <PWM2.h>
-#include "encoder_interrupt.h"
 #include "speedometer.h"
 
 #include "state.h"
