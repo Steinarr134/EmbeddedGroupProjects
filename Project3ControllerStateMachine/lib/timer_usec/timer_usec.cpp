@@ -7,6 +7,7 @@ void Timer_usec::init(){
     TCCR1A = 0;                          // set timer1 to normal operation (all bits in control registers A and B set to zero)
     TCCR1B = 0;                          //
     TCNT1 = 0;                           //  initialize counter value to 0
+    TIMSK1 |= (1 << TOIE1);             // Hoping this will enable overflow flag
     TCCR1B |= (1 << CS11);               // set prescaler to 8 and start the timer
     //sei();                             // enable interrupts
 }
@@ -21,7 +22,7 @@ void Timer_usec::reset() {
 
 
 bool Timer_usec::overflow() {
-    bool tmp = (TIFR1 & TOV1);
+    bool tmp = (TIFR1 & (1<<TOV1));
     if(tmp){
         TIFR1 |= TOV1; // clear overflow flag, yes it's supposed to be 1 to clear: "Alternatively, TOV1 can be
          //cleared by writing a logic one to its bit location."

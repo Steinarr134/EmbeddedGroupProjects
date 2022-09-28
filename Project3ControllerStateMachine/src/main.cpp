@@ -19,9 +19,9 @@
 #define MAX_RPM 15000
 
 int16_t duty = 0;
-int16_t set_point = 6000;
-double kp = 6; // gain
-double ki = 6;//0.01;
+int16_t set_point = 5000;
+double kp = 15; // gain
+double ki = 10;//0.01;
 
 Encoder_interrupt encoder;
 Digital_out led(5);
@@ -77,13 +77,13 @@ int main()
     if (count > 500)
     { // to vary the set point
       count = 0;
-      if (set_point == -4000)
+      if (set_point == -5000)
       {
         set_point = 5000;
       }
       else
       {
-        set_point = -4000;
+        set_point = -5000;
       }
     }
   }
