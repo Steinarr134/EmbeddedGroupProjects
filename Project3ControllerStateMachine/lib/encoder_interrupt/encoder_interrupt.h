@@ -13,7 +13,7 @@ private:
     long counter;
     bool last_state1;
     bool last_state2;
-    bool forward; // 1 forward, 0 reverse
+    bool forward_; // 1 forward, 0 reverse
     void set_interrupt_d1();
     void set_interrupt_d2();
 };

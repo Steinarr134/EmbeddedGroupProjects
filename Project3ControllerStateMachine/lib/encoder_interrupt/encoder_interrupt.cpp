@@ -18,6 +18,10 @@ void Encoder_interrupt::reset(){
     counter = 0;
 }
 
+bool Encoder_interrupt::forward() {
+    return forward_;
+}
+
 void Encoder_interrupt::pin1()
 {
 
@@ -29,10 +33,12 @@ void Encoder_interrupt::pin1()
         if (last_state2)
         {
             counter--;
+            forward_ = false;
         }
         else
         {
             counter++;
+            forward_ = true;
         }
     }
     else
@@ -40,13 +46,16 @@ void Encoder_interrupt::pin1()
         if (last_state2)
         {
             counter++;
+            forward_ = true;
         }
         else
         {
             counter--;
+            forward_ = false;
         }
     }
     PORTB ^= (1 << 5);
+    
 }
 
 void Encoder_interrupt::pin2()
@@ -59,10 +68,12 @@ void Encoder_interrupt::pin2()
         if (last_state1)
         {
             counter++;
+            forward_ = true;
         }
         else
         {
             counter--;
+            forward_ = false;
         }
     }
     else
@@ -70,10 +81,12 @@ void Encoder_interrupt::pin2()
         if (last_state1)
         {
             counter--;
+            forward_ = false;
         }
         else
         {
             counter++;
+            forward_ = true;
         }
     }
     PORTB ^= (1 << 5);
