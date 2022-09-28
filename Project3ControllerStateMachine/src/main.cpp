@@ -57,6 +57,9 @@ int main()
       }
       else {
         rpm = (int32_t)(double)60/((double)14*t);
+        if(!encoder.forward()){
+          rpm = -rpm;
+        }
         if(rpm > 15000 || rpm < -15000) { // at startup rpm can get to some insane number that hacky serial can't even comprehend 
           rpm = 0;
         }
