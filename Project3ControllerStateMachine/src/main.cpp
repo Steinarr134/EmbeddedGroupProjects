@@ -21,7 +21,8 @@
 
 #define DELTA_T (uint8_t)5
 #define INV_DELTA_T (int32_t)(1.0 / ((float)DELTA_T / 1000.0))
-#define PPR (int32_t)(7 * 2 * 2) // 7 pulses per phase and triggering on falling as well
+#define PPR (int32_t)(7 * 2 ) // 7 pulses per phase and triggering on falling as well, but only usin single phase
+#define SECONDS_TO_MINUTE 60
 #define GEAR_REDUCTION (int32_t)101
 #define MAX_PWM 255
 #define MAX_RPM 15000
@@ -67,7 +68,7 @@ int main()
         rpm = 0;
       }
       else {
-        rpm = (int32_t)(double)60/((double)14*t);
+        rpm = (int32_t)(double)SECONDS_TO_MINUTE/((double)PPR*t);
         if(!encoder.forward()){
           rpm = -rpm;
         }
@@ -83,8 +84,8 @@ int main()
       count++;
       PORTC ^= (1<<PORTC0); // A0
     }
-    //set_point = 0;
-    //continue;
+    set_point = 0;
+    continue;
     if (count > 500)
     { // to vary the set point
       count = 0;
