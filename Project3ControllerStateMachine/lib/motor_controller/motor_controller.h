@@ -11,10 +11,12 @@ class Motor_controller : PWM2 {
     public:
     Motor_controller(uint8_t pin1, uint8_t pin2); // only portB allowed 
     void update(int16_t pwm);
+    void brake();
+    void unbrake();
     private:
     uint8_t a1_mask;
     uint8_t a2_mask;
-    uint8_t brake;
+    uint8_t brake_;
 };
 
     Motor_controller::Motor_controller(uint8_t pin1, uint8_t pin2){ // can't find how to use Digital_out
@@ -26,10 +28,17 @@ class Motor_controller : PWM2 {
         this->init();
         
     }
+    void Motor_controller::brake() {
+        brake_ = true;
+        this->set(0); 
+    }
+    void Motor_controller::unbrake() {
+        brake_ = false; 
+    }
     void Motor_controller::update(int16_t pwm) {
-        if(brake) {
-            PORTB |= a1_mask|a2_mask;
-            this->set(0); // apparently it's enough to have PWM == 0  to brake but we're not very familiar with the PWM generation, maybe it does something weird when pwm == 0;
+        if(brake_) { // don't do anything until brake is released 
+            //PORTB |= a1_mask|a2_mask; // if you want to enable the motor shunt brake
+            this->set(0); 
             return;
         }
         else {
