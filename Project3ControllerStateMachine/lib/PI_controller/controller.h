@@ -31,6 +31,7 @@ class PI_controller : controller {
         max_pwm_ = max_pwm;
         integral_ = 0;
         delta_t_ = (double)delta_t / 1000.0;
+        tmp_u = 0;
 
     }
     int16_t PI_controller::update(double set_point, double actual) {
