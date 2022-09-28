@@ -16,6 +16,7 @@ class controller {
     double integral_;
     double delta_t_;
     double u;
+    double tmp_u;
 };
 
 class PI_controller : controller {
@@ -35,13 +36,12 @@ class PI_controller : controller {
 
     }
     int16_t PI_controller::update(double set_point, double actual) {
-        double tmp_u;
         double e = set_point - actual;
         
         //windup guard needs to account for scaling 
-        //if(u < 255 && u > -255) { // only integrate if pwm is less than 100p 
+        if(tmp_u <= 255 && tmp_u >= -255) { // only integrate if pwm is less than 100p 
             integral_ += e * delta_t_;
-        //}
+        }
         
         /*print_i((int32_t) u);
         print_one('\t');

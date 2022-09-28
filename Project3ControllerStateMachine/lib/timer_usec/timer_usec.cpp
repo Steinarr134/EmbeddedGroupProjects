@@ -7,7 +7,7 @@ void Timer_usec::init(){
     TCCR1A = 0;                          // set timer1 to normal operation (all bits in control registers A and B set to zero)
     TCCR1B = 0;                          //
     TCNT1 = 0;                           //  initialize counter value to 0
-    TIMSK1 |= (1 << TOIE1);             // Hoping this will enable overflow flag
+    TIMSK1 |= (1 << TOIE1);              // this helps with the ovf, no Idea why 
     TCCR1B |= (1 << CS11);               // set prescaler to 8 and start the timer
     //sei();                             // enable interrupts
 }
