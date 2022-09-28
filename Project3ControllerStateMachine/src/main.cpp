@@ -25,6 +25,7 @@
 #define GEAR_REDUCTION (int32_t)101
 #define MAX_PWM 255
 #define MAX_RPM 15000
+#define TIMER_RESOLUTION (double)500e-9
 
 int16_t duty = 0;
 int16_t set_point = 5000;
@@ -52,7 +53,7 @@ int main()
   USART_Init(0); // 1megabaud
   // USART_Init(MYUBRR); // 9600
   timer_u.init();
-  timer_msec.init(5);
+  timer_msec.init(DELTA_T);
   encoder.init();
   DDRC |= (1<<0);
   while (true)
@@ -61,7 +62,7 @@ int main()
     { // if there's a new measurement available
       dc = delta_counts; 
       //convert dc to us, each count is .5µs or .5µs/count => .5µs/count * counts = µs
-      double t = (double)500e-9 * (double)dc; 
+      double t = TIMER_RESOLUTION * (double)dc; 
       if(timer_u.overflow()) {
         rpm = 0;
       }
@@ -70,7 +71,7 @@ int main()
         if(!encoder.forward()){
           rpm = -rpm;
         }
-        if(rpm > 15000 || rpm < -15000) { // at startup rpm can get to some insane number that hacky serial can't even comprehend 
+        if(rpm > MAX_RPM || rpm < -MAX_RPM) { // at startup rpm can get to some insane number that hacky serial can't even comprehend 
           rpm = 0;
         }
 

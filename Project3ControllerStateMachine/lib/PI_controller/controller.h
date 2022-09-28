@@ -39,7 +39,7 @@ class PI_controller : controller {
         double e = set_point - actual;
         
         //windup guard needs to account for scaling 
-        if(tmp_u <= 255 && tmp_u >= -255) { // only integrate if pwm is less than 100p 
+        if(tmp_u <= max_pwm_ && tmp_u >= -max_pwm_) { // only integrate if pwm is less than 100p 
             integral_ += e * delta_t_;
         }
         
