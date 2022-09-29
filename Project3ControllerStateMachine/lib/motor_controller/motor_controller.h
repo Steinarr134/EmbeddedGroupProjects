@@ -30,14 +30,16 @@ class Motor_controller : PWM2 {
     }
     void Motor_controller::brake() {
         brake_ = true;
+        PORTB |= a1_mask|a2_mask; // if you want to enable the motor shunt brake
         this->set(0); 
     }
     void Motor_controller::unbrake() {
+        PORTB &= ~(a1_mask|a2_mask);
         brake_ = false; 
     }
     void Motor_controller::update(int16_t pwm) {
         if(brake_) { // don't do anything until brake is released 
-            //PORTB |= a1_mask|a2_mask; // if you want to enable the motor shunt brake
+            PORTB |= a1_mask|a2_mask; // if you want to enable the motor shunt brake
             this->set(0); 
             return;
         }
