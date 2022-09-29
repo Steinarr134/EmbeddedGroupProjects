@@ -1,5 +1,5 @@
 #include "hackySerial.h"
-#include "Context.h"
+#include "state.h"
 // #include "Arduino.h"
 #define FOSC 16000000 // Clock Speed
 #define BAUD 9600
@@ -9,11 +9,17 @@
 
 unsigned char b[buffer_size]; // buffer for incoming stuff
 unsigned char toolongmsg[] = {'t', 'o', 'o', ' ', 'l', 'o', 'n', 'g'};
-// for creating a print statement:
-//def p(s):
-//  print("print((unsigned char){'" + "', '".join(s) + "'}, " + str(len(s)) + ");")
 
-               uint8_t b_i; // index, how many characters have been received unsigned char b_t; // first character
+// for creating a print statement:
+// def p(s):
+//     print("print((unsigned char){'" + "', '".join(s) + "'}, " + str(len(s)) + ");")
+// def p2(s):
+//      for c in s: 
+//              print("print_one('" + c + "');")
+//      print("println();")
+
+
+uint8_t b_i; // index, how many characters have been received unsigned char b_t; // first character
 
 Parsed parse()
 {
@@ -71,7 +77,13 @@ class Init : public State
     {
     public:
         void on_do() override {}
-        void on_entry() override {}
+        void on_entry() override {
+            print_one('I');
+            print_one('n');
+            print_one('i');
+            print_one('t');
+            println();
+        }
         void on_exit() override{}
         void set(Parsed p) override {}
         void cmd(unsigned char C) override {}
@@ -80,7 +92,14 @@ class PreOp : public State
     {
     public:
         void on_do() override {}
-        void on_entry() override {}
+        void on_entry() override {
+            print_one('P');
+            print_one('r');
+            print_one('e');
+            print_one('O');
+            print_one('p');
+            println();
+        }
         void on_exit() override {}
         void set(Parsed p) override {}
         void cmd(unsigned char C) override {}
@@ -90,7 +109,11 @@ class Op : public State
     {
     public:
         void on_do() override {}
-        void on_entry() override {}
+        void on_entry() override {
+            print_one('O');
+            print_one('p');
+            println();
+        }
         void on_exit() override {}
         void set(Parsed p) override {}
         void cmd(unsigned char C) override {}
@@ -100,7 +123,13 @@ class Stop : public State
     {
     public:
         void on_do() override {}
-        void on_entry() override {}
+        void on_entry() override {
+            print_one('S');
+            print_one('t');
+            print_one('o');
+            print_one('p');
+            println();
+        }
         void on_exit() override {}
         void set(Parsed p) override {}
         void cmd(unsigned char C) override {}
@@ -114,7 +143,15 @@ int main(){
         if (USART_receive_ready())
         {
             unsigned char inn = USART_Receive();
+            // print_i_ln(inn);
             USART_Transmit(inn);
+            if (inn == 8)
+            {
+                // backspace
+                if (b_i > 0)
+                    b_i--;
+                continue;
+            }
             if (b_i >= buffer_size && inn != '\n'){
                 println(toolongmsg, sizeof(toolongmsg));
                 reset_buffer();
@@ -127,8 +164,19 @@ int main(){
                     if ('A' <= b[0] && b[0] <= 'Z')
                     {
                         // send command to current state
-                        context->cmd(b[0]);
-
+                        if (b[0] == 'I')
+                            context->transition_to(new Init);
+                        else if (b[0] == 'P')
+                            context->transition_to(new PreOp);
+                        else if (b[0] == 'O')
+                            context->transition_to(new Op);
+                        else if (b[0] == 'S')
+                            context->transition_to(new Stop);
+                        else
+                        {
+                            context->cmd(b[0]);
+                        }
+                        
                     }
                     else if ('a' <= b[0] && b[0] <= 'z')
                     {

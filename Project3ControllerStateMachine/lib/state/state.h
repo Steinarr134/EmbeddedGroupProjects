@@ -1,13 +1,19 @@
-#ifndef STATE_H_
-#define STATE_H_
-// State Behaviour based on the C++ example at Refactoring Guru
-
+#ifndef CONTEXT_DEFINED
+#define CONTEXT_DEFINED
 /**
  * The base State class declares methods that all concrete states should
  * implement and also provides a backreference to the Context object, associated
  * with the State. This backreference can be used by States to transition the
  * Context to another State.
  */
+
+struct parsedstruct
+{
+  unsigned char what;
+  double val;
+};
+
+typedef struct parsedstruct Parsed;
 
 class Context; // Forward declaration to allow the definition of a pointer to Context without compile error
 
@@ -36,12 +42,11 @@ public:
 
   virtual void on_exit() = 0;
 
-  virtual void on_go() = 0;
+  virtual void set(Parsed set) = 0;
 
-  virtual void on_stop() = 0;
+  virtual void cmd(unsigned char C) = 0;
 
   // ...
-
 };
 
 /**
@@ -98,15 +103,14 @@ public:
     this->state_->on_do();
   }
 
-  void go_command()
+  void set(Parsed p)
   {
-    this->state_->on_go();
+    this->state_->set(p);
   }
-
-  void stop_command()
+  void cmd(unsigned char C)
   {
-    this->state_->on_stop();
+    this->state_->cmd(C);
   }
-
 };
-#endif //STATE_H
+
+#endif
