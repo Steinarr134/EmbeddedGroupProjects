@@ -213,8 +213,8 @@ class Stop : public State
 
 int main()
 {
-  USART_Init(0); // 1megabaud
-  // USART_Init(MYUBRR); // 9600
+  //USART_Init(0); // 1megabaud
+  USART_Init(MYUBRR); // 9600
   timer_u.init();
   timer_msec.init(DELTA_T);
   encoder.init();
