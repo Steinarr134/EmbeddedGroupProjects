@@ -1,0 +1,24 @@
+whatever or nothing between sendings, \n to clear buffer
+upper case single letter to indicate switch to state
+lower case to set values
+
+System starts in initialization, transitions to Preoperational on its own
+
+In Preoperational:
+    p=1.34: -> sets Kp to 1.34
+    i=0.45: -> sets Ki to 0.45
+    O -> transition to Operational
+
+In Operational:
+    S -> Transition to Stopped
+    P -> Transition to Operational
+
+In Stop:
+    O -> Transition to Operational
+    P -> Transition to Preoperational
+    I -> Transition to Initialization
+
+In Initialization:
+    (nothing)
+
+

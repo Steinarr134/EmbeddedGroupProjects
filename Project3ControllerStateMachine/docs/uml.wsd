@@ -1,0 +1,34 @@
+@startuml
+
+[*] -d-> Initialization
+Initialization -d-> PreOperation
+
+PreOperation --> Initialization: cmd: reset
+PreOperation --> Operation: cmd: set_operational
+PreOperation --> Stopped: cmd: e_stop
+
+
+Operation --> Initialization: cmd: reset
+Operation --> PreOperation: cmd: set_preOp
+Operation --> Stopped: cmd: e_stop
+Stopped --> Initialization: cmd: clear_fault
+Stopped --> PreOperation: cmd: clear_fault
+Stopped --> Operation: cmd: clear_fault
+
+Operation: Entry/ LED On
+Operation: Do/ Run Controller
+Operation: Exit/ LED Off
+
+
+Initialization : Entry/ Initialize Parameters
+Initialization : Exit/ Send Boot up Message
+
+PreOperation : Do/ Blink LED @ 1Hz 
+PreOperation : Do/ Accept configuration changes
+PreOperation : Exit/ Turn off LED
+
+
+Stopped : Entry/ Stop Motor
+Stopped : Do/ Blink LED @ 2Hz
+Stopped : Exit/ Turn off LED
+@enduml

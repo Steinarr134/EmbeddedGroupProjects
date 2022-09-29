@@ -32,7 +32,7 @@ volatile int32_t delta_counts = 0;
 volatile bool flag = false;
 volatile uint16_t time = 0;
 int32_t rpm = 0; // initialize just cause
-unsigned int counter = 0;
+unsigned int count = 0;
 int32_t dc;
 
 int main()
@@ -58,12 +58,12 @@ int main()
       print_3_numbers(set_point, rpm, duty);
       pwm.set(duty);
       flag = false;
-      counter++;
+      count++;
     }
 
-    if (counter > 1000)
+    if (count > 1000)
     { // to vary the set point
-      counter = 0;
+      count = 0;
       if (set_point == 5000)
       {
         set_point = 10000;
