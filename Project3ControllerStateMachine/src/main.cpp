@@ -48,6 +48,24 @@ unsigned char toolongmsg[] = {'t', 'o', 'o', ' ', 'l', 'o', 'n', 'g'};
 
 
 uint8_t b_i; // index, how many characters have been received unsigned char b_t; // first character
+int16_t duty = 0;
+int16_t set_point = 5000;
+double kp = 10; // gain
+double ki = 5.4;//0.01;
+
+Encoder_interrupt encoder;
+Digital_out led(5);
+Motor_controller motor_controller(0, 1);
+PI_controller controller(kp, ki, MAX_RPM, MAX_PWM, DELTA_T);
+Timer_usec timer_u;
+Timer0_msec timer_msec;
+volatile int32_t counter = 0;
+volatile uint16_t delta_counts = 0;
+volatile bool flag = false;
+volatile uint16_t time = 0;
+int32_t rpm = 0; // initialize just cause
+unsigned int count = 0;
+uint16_t dc;
 
 Parsed parse()
 {
@@ -190,24 +208,6 @@ class Stop : public State
     };
 
 
-int16_t duty = 0;
-int16_t set_point = 5000;
-double kp = 10; // gain
-double ki = 5.4;//0.01;
-
-Encoder_interrupt encoder;
-Digital_out led(5);
-Motor_controller motor_controller(0, 1);
-PI_controller controller(kp, ki, MAX_RPM, MAX_PWM, DELTA_T);
-Timer_usec timer_u;
-Timer0_msec timer_msec;
-volatile int32_t counter = 0;
-volatile uint16_t delta_counts = 0;
-volatile bool flag = false;
-volatile uint16_t time = 0;
-int32_t rpm = 0; // initialize just cause
-unsigned int count = 0;
-uint16_t dc;
 
 
 
