@@ -9,8 +9,8 @@
 
 struct parsedstruct
 {
-  unsigned char what;
-  double val;
+    unsigned char what;
+    double val;
 };
 
 typedef struct parsedstruct Parsed;
@@ -46,6 +46,7 @@ public:
 
   virtual void cmd(unsigned char C) = 0;
 
+
   // ...
 };
 
@@ -57,60 +58,60 @@ public:
 
 class Context
 {
-  /**
-   * @var State A reference to the current state of the Context.
-   */
+    /**
+     * @var State A reference to the current state of the Context.
+     */
 
 private:
-  State *state_;
+    State *state_;
 
 public:
-  Context(State *state) : state_(nullptr)
-  {
-    this->transition_to(state);
-  }
-
-  ~Context()
-  {
-    delete state_;
-  }
-
-  /**
-   * The Context allows changing the State object at runtime.
-   */
-
-  void transition_to(State *state)
-  {
-    if (this->state_ != nullptr)
+    Context(State *state) : state_(nullptr)
     {
-      this->state_->on_exit();
-      delete this->state_;
+        this->transition_to(state);
     }
 
-    this->state_ = state;
+    ~Context()
+    {
+        delete state_;
+    }
 
-    this->state_->set_context(this);
+    /**
+     * The Context allows changing the State object at runtime.
+     */
 
-    this->state_->on_entry();
-  }
+    void transition_to(State *state)
+    {
+        if (this->state_ != nullptr)
+        {
+            this->state_->on_exit();
+            delete this->state_;
+        }
 
-  /**
-   * The Context delegates part of its behavior to the current State object.
-   */
+        this->state_ = state;
 
-  void do_work()
-  {
-    this->state_->on_do();
-  }
+        this->state_->set_context(this);
 
-  void set(Parsed p)
-  {
-    this->state_->set(p);
-  }
-  void cmd(unsigned char C)
-  {
-    this->state_->cmd(C);
-  }
+        this->state_->on_entry();
+    }
+
+    /**
+     * The Context delegates part of its behavior to the current State object.
+     */
+
+    void do_work()
+    {
+        this->state_->on_do();
+    }
+
+    void set(Parsed p)
+    {
+        this->state_->set(p);
+    }
+    void cmd(unsigned char C)
+    {
+        this->state_->cmd(C);
+    }
 };
 
 #endif
