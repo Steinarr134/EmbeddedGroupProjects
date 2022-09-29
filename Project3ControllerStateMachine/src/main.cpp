@@ -30,8 +30,8 @@
 
 int16_t duty = 0;
 int16_t set_point = 5000;
-double kp = 15; // gain
-double ki = 10;//0.01;
+double kp = 10; // gain
+double ki = 5.4;//0.01;
 
 Encoder_interrupt encoder;
 Digital_out led(5);
@@ -82,20 +82,19 @@ int main()
       motor_controller.update(duty);
       flag = false;
       count++;
-      PORTC ^= (1<<PORTC0); // A0
     }
     //set_point = 0; // try setting set point to 0 and turn the motor
     //continue;
-    if (count > 500)
+    if (count > 1000)
     { // to vary the set point
       count = 0;
-      if (set_point == -5000)
+      if (set_point == 500)
       {
         set_point = 5000;
       }
       else
       {
-        set_point = -5000;
+        set_point = 500;
       }
     }
   }
