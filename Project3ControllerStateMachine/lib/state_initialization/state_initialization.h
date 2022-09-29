@@ -10,7 +10,5 @@ public:
 
   void on_exit() override;
 
-  void on_go() override;
-  
-  void on_stop() override;
+
 };
