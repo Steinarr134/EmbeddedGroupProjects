@@ -1,5 +1,5 @@
 #include <state.h>
-
+#include <parsed.h>
 class state_stopped : public State
 {
 public:

@@ -15,6 +15,8 @@
 #include <speedometer.h>
 
 #include <state.h>
+#include <context.h>
+#include <parsed.h>
 #include <state_stopped.h>
 #include <state_pre_op.h>
 #include <state_operation.h>
@@ -66,46 +68,7 @@ volatile uint16_t time = 0;
 int32_t rpm = 0; // initialize just cause
 unsigned int count = 0;
 
-Parsed parse()
-{
-  // b should now be on the form p=1.34\0\0\0\0
-  Parsed ret;
-  ret.what = b[0];
 
-  double value = 0;
-  int tens = 1;
-  bool decimal_done = false;
-  for (int i = 1; i < buffer_size; i++)
-  {
-    if (b[i] == '.' || ('0' <= b[i] && b[i] <= '9'))
-    {
-      if (b[i] == '.')
-      {
-        decimal_done = true;
-        tens = 10;
-        continue;
-      }
-      if (b[i] == 0)
-      {
-        ret.val = value;
-        return ret;
-      }
-      if (!decimal_done)
-      {
-        value *= tens;
-        value += b[i] - '0';
-        tens *= 10;
-      }
-      else
-      {
-        value += (double)(b[i] - '0') / tens;
-        tens *= 10;
-      }
-    }
-  }
-  ret.val = value;
-  return ret;
-}
 
 void reset_buffer()
 {
@@ -118,114 +81,16 @@ void reset_buffer()
 
 Context *context;
 
-<<<<<<< HEAD
-class Init : public State
-{
-public:
-  void on_do() override {}
-  void on_entry() override
-  {
-    print_one('I');
-    print_one('n');
-    print_one('i');
-    print_one('t');
-    println();
-  }
-  void on_exit() override {}
-  void set(Parsed p) override {}
-  void cmd(unsigned char C) override {}
-};
-class PreOp : public State
-{
-public:
-  void on_do() override {}
-  void on_entry() override
-  {
-    print_one('P');
-    print_one('r');
-    print_one('e');
-    print_one('O');
-    print_one('p');
-    println();
-  }
-  void on_exit() override {}
-  void set(Parsed p) override {}
-  void cmd(unsigned char C) override {}
-};
-
-class Op : public State
-{
-public:
-  void on_do() override
-  {
-    if (flag)
-    { // if there's a new measurement available
-      double dc = delta_counts.get();
-      // convert dc to us, each count is .5µs or .5µs/count => .5µs/count * counts = µs
-      double t = TIMER_RESOLUTION * (double)dc;
-      if (timer_u.overflow())
-      {
-        rpm = 0;
-      }
-      else
-      {
-        rpm = (int32_t)(double)SECONDS_TO_MINUTE / ((double)PPR * t);
-        if (!encoder.forward())
-        {
-          rpm = -rpm;
-        }
-        if (rpm > MAX_RPM || rpm < -MAX_RPM)
-        { // at startup rpm can get to some insane number that hacky serial can't even comprehend
-          rpm = 0;
-        }
-      }
-      duty = (int16_t)controller.update(set_point, rpm); // RPM of input shaft, not rpm of output shaft!!
-      print_3_numbers(set_point, rpm, duty);
-      motor_controller.update(duty);
-      flag = false;
-      count++;
-    }
-  }
-  void on_entry() override
-  {
-    motor_controller.unbrake();
-    print_one('O');
-    print_one('p');
-    println();
-  }
-  void on_exit() override {}
-  void set(Parsed p) override {}
-  void cmd(unsigned char C) override {}
-};
-
-class Stop : public State
-{
-public:
-  void on_do() override {}
-  void on_entry() override
-  {
-    motor_controller.brake();
-    print_one('S');
-    print_one('t');
-    print_one('o');
-    print_one('p');
-    println();
-  }
-  void on_exit() override {}
-  void set(Parsed p) override {}
-  void cmd(unsigned char C) override {}
-};
-=======
->>>>>>> 05c4465 (started migrating stuff into state machine architecture. nothing works)
 
 int main()
 {
   USART_Init(0); // 1megabaud
   //USART_Init(MYUBRR); // 9600
+  context = new Context(new state_intialization);
   timer_u.init();
   timer_msec.init(DELTA_T);
-  encoder.init();
-  context = new Context(new Init);
+  context->encoder.init();
+  
   while (true)
   {
 
@@ -255,13 +120,13 @@ int main()
           {
             // send command to current state
             if (b[0] == 'I')
-              context->transition_to(new Init);
+              context->transition_to(new state_intialization);
             else if (b[0] == 'P')
-              context->transition_to(new PreOp);
+              context->transition_to(new state_pre_op);
             else if (b[0] == 'O')
-              context->transition_to(new Op);
+              context->transition_to(new state_operation);
             else if (b[0] == 'S')
-              context->transition_to(new Stop);
+              context->transition_to(new state_stopped);
             else
             {
               context->cmd(b[0]);
@@ -287,14 +152,14 @@ int main()
 
 ISR(INT0_vect)
 {
-  encoder.pin1();
+  context->encoder.pin1();
   delta_counts.set(timer_u.get());
   timer_u.reset();
 }
 
 ISR(INT1_vect)
 {
-  encoder.pin2();
+  context->encoder.pin2();
 }
 
 ISR(TIMER0_COMPA_vect)

@@ -10,7 +10,7 @@
 #include "digital_out.h"
 #include "timer_usec.h"
 #include "timer0_msec.h"
-#include "encoder_simple.h"
+#include <encoder_simple.h>
 
 #include <hackySerial.h>
 #include <controller.h> // todo: move PI controller to separate file
@@ -44,22 +44,6 @@ double ki = 5.4; // 0.01;
  * Context to another State.
  */
 
-struct parsedstruct
-{
-  unsigned char what;
-  double val;
-};
-
-typedef struct parsedstruct Parsed;
-
-struct parsedstruct
-{
-    unsigned char what;
-    double val;
-};
-
-typedef struct parsedstruct Parsed;
-
 extern class State;
 
 class Context
@@ -72,6 +56,8 @@ private:
     State *state_;
 
 public:
+    Encoder_simple encoder;
+
     Context(State *state) : state_(nullptr)
     {
         this->transition_to(state);
