@@ -22,7 +22,24 @@
 #include <encoder_interrupt.h>
 #include <speedometer.h>
 
+#define MAX_PWM 255
+#define MAX_RPM 15000
+#define TIMER_RESOLUTION (double)500e-9
 
+
+// for creating a print statement:
+// def p(s):
+//     print("print((unsigned char){'" + "', '".join(s) + "'}, " + str(len(s)) + ");")
+// def p2(s):
+//      for c in s:
+//              print("print_one('" + c + "');")
+//      print("println();")
+
+uint8_t b_i; // index, how many characters have been received unsigned char b_t; // first character
+int16_t duty = 0;
+int16_t set_point = 5000;
+double kp = 10;  // gain
+double ki = 5.4; // 0.01;
 
 /**
  * The base State class declares methods that all concrete states should

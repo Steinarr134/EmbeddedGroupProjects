@@ -6,8 +6,6 @@
 #include <timer0_msec.h>
 #include <encoder_simple.h>
 
-
-#include <moving_average.h>
 #include <hackySerial.h>
 #include <controller.h> // todo: move PI controller to separate file
 #include <encoder_interrupt.h>
@@ -15,12 +13,36 @@
 #include <speedometer.h>
 
 #include <state.h>
-#include <context.h>
-#include <parsed.h>
 #include <state_stopped.h>
 #include <state_pre_op.h>
 #include <state_operation.h>
 #include <state_initialization.h>
+
+
+// #include "Arduino.h"
+#define FOSC 16000000 // Clock Speed
+#define BAUD 9600
+#define MYUBRR FOSC / 16 / BAUD - 1
+
+#define buffer_size 10
+
+#define DELTA_T (uint8_t)5
+#define INV_DELTA_T (int32_t)(1.0 / ((float)DELTA_T / 1000.0))
+#define PPR (int32_t)(7 * 2) // 7 pulses per phase and triggering on falling as well, but only usin single phase
+#define SECONDS_TO_MINUTE 60
+#define GEAR_REDUCTION (int32_t)101
+#define MAX_PWM 255
+#define MAX_RPM 15000
+#define TIMER_RESOLUTION (double)500e-9
+
+
+// for creating a print statement:
+// def p(s):
+//     print("print((unsigned char){'" + "', '".join(s) + "'}, " + str(len(s)) + ");")
+// def p2(s):
+//      for c in s:
+//              print("print_one('" + c + "');")
+//      print("println();")
 
 #include<random_defs.h>
 
