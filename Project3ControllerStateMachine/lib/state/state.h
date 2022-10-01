@@ -1,21 +1,6 @@
 #ifndef CONTEXT_DEFINED
 #define CONTEXT_DEFINED
-/**
- * The base State class declares methods that all concrete states should
- * implement and also provides a backreference to the Context object, associated
- * with the State. This backreference can be used by States to transition the
- * Context to another State.
- */
-
-struct parsedstruct
-{
-  unsigned char what;
-  double val;
-};
-
-typedef struct parsedstruct Parsed;
-
-class Context; // Forward declaration to allow the definition of a pointer to Context without compile error
+extern class Context; // Forward declaration to allow the definition of a pointer to Context without compile error
 
 class State
 {
@@ -65,6 +50,13 @@ private:
   State *state_;
 
 public:
+
+Encoder_interrupt encoder;
+Digital_out led(5);
+Motor_controller motor_controller(0, 1);
+PI_controller controller(kp, ki, MAX_RPM, MAX_PWM, DELTA_T);
+
+
   Context(State *state) : state_(nullptr)
   {
     this->transition_to(state);

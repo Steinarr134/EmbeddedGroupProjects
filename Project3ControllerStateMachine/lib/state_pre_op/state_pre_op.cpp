@@ -9,6 +9,7 @@ public:
   void on_entry() {};
 
   void on_exit() {};
-
+  void set(Parsed p)  {}
+  void cmd(unsigned char C)  {}
 
 };

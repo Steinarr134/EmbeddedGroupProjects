@@ -1,25 +1,26 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include "digital_out.h"
-#include "timer_usec.h"
-#include "timer0_msec.h"
-#include "encoder_simple.h"
+#include <digital_out.h>
+#include <timer_usec.h>
+#include <timer0_msec.h>
+#include <encoder_simple.h>
 
-#include "controller.h" // todo: move PI controller to separate file
-#include "encoder_interrupt.h"
-#include "motor_controller.h"
-#include "speedometer.h"
-#include "moving_average.h"
 
-#include "state.h"
-#include "state_stopped.h"
-#include "state_pre_op.h"
-#include "state_operation.h"
-#include "state_initialization.h"
+#include <moving_average.h>
+#include <hackySerial.h>
+#include <controller.h> // todo: move PI controller to separate file
+#include <encoder_interrupt.h>
+#include <motor_controller.h>
+#include <speedometer.h>
 
-#include "hackySerial.h"
-#include "state.h"
+#include <state.h>
+#include <state_stopped.h>
+#include <state_pre_op.h>
+#include <state_operation.h>
+#include <state_initialization.h>
+
+
 // #include "Arduino.h"
 #define FOSC 16000000 // Clock Speed
 #define BAUD 9600
@@ -36,8 +37,6 @@
 #define MAX_RPM 15000
 #define TIMER_RESOLUTION (double)500e-9
 
-unsigned char b[buffer_size]; // buffer for incoming stuff
-unsigned char toolongmsg[] = {'t', 'o', 'o', ' ', 'l', 'o', 'n', 'g'};
 
 // for creating a print statement:
 // def p(s):
@@ -53,10 +52,11 @@ int16_t set_point = 5000;
 double kp = 10;  // gain
 double ki = 5.4; // 0.01;
 
-Encoder_interrupt encoder;
-Digital_out led(5);
-Motor_controller motor_controller(0, 1);
-PI_controller controller(kp, ki, MAX_RPM, MAX_PWM, DELTA_T);
+unsigned char b[buffer_size]; // buffer for incoming stuff
+unsigned char toolongmsg[] = {'t', 'o', 'o', ' ', 'l', 'o', 'n', 'g'};
+
+
+
 Timer_usec timer_u;
 Timer0_msec timer_msec;
 volatile int32_t counter = 0;
@@ -118,6 +118,7 @@ void reset_buffer()
 
 Context *context;
 
+<<<<<<< HEAD
 class Init : public State
 {
 public:
@@ -214,6 +215,8 @@ public:
   void set(Parsed p) override {}
   void cmd(unsigned char C) override {}
 };
+=======
+>>>>>>> 05c4465 (started migrating stuff into state machine architecture. nothing works)
 
 int main()
 {
