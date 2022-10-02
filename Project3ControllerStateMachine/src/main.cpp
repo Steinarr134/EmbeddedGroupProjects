@@ -10,6 +10,7 @@
 #include "encoder_interrupt.h"
 #include "motor_controller.h"
 #include "speedometer.h"
+#include "moving_average.h"
 
 #include "state.h"
 #include "state_stopped.h"
@@ -59,12 +60,11 @@ PI_controller controller(kp, ki, MAX_RPM, MAX_PWM, DELTA_T);
 Timer_usec timer_u;
 Timer0_msec timer_msec;
 volatile int32_t counter = 0;
-volatile uint16_t delta_counts = 0;
+Moving25 delta_counts;
 volatile bool flag = false;
 volatile uint16_t time = 0;
 int32_t rpm = 0; // initialize just cause
 unsigned int count = 0;
-uint16_t dc;
 
 Parsed parse()
 {
@@ -159,7 +159,7 @@ public:
   {
     if (flag)
     { // if there's a new measurement available
-      dc = delta_counts;
+      double dc = delta_counts.get();
       // convert dc to us, each count is .5µs or .5µs/count => .5µs/count * counts = µs
       double t = TIMER_RESOLUTION * (double)dc;
       if (timer_u.overflow())
@@ -285,7 +285,7 @@ int main()
 ISR(INT0_vect)
 {
   encoder.pin1();
-  delta_counts = timer_u.get();
+  delta_counts.set(timer_u.get());
   timer_u.reset();
 }
 
