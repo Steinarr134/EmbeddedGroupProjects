@@ -1,4 +1,7 @@
-#include "avr/io.h"
+#ifndef HACKY_SERIAL_DEFINED
+#define HACKY_SERIAL_DEFINED
+
+#include <avr/io.h>
 // for printing to serial::
 // USART code taken from datasheet for printing to serial
 #define FOSC 16000000 // Clock Speed
@@ -108,3 +111,4 @@ void print_i_ln(int32_t i)
   print_i(i);
   println();
 }
+#endif

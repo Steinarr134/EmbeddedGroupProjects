@@ -1,6 +1,6 @@
 #ifndef MOTOR_CONTROLLER_H_
 #define MOTOR_CONTROLLER_H_
-#include "PWM2.h"
+#include <PWM2.h>
 
 PWM2 pwm;
 class Motor_controller : PWM2 {

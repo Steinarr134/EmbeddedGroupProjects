@@ -1,3 +1,8 @@
+#ifndef PARSED_DEFINED
+#define PARSED_DEFINED
+
+#include <random_defs.h>
+
 struct Parsed
 {
   unsigned char what;
@@ -44,3 +49,5 @@ Parsed parse()
   ret.val = value;
   return ret;
 }
+
+#endif

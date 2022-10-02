@@ -22,52 +22,7 @@
 #include <state_operation.h>
 #include <state_initialization.h>
 
-
-// #include "Arduino.h"
-#define FOSC 16000000 // Clock Speed
-#define BAUD 9600
-#define MYUBRR FOSC / 16 / BAUD - 1
-
-#define buffer_size 10
-
-#define DELTA_T (uint8_t)5
-#define INV_DELTA_T (int32_t)(1.0 / ((float)DELTA_T / 1000.0))
-#define PPR (int32_t)(7 * 2) // 7 pulses per phase and triggering on falling as well, but only usin single phase
-#define SECONDS_TO_MINUTE 60
-#define GEAR_REDUCTION (int32_t)101
-#define MAX_PWM 255
-#define MAX_RPM 15000
-#define TIMER_RESOLUTION (double)500e-9
-
-
-// for creating a print statement:
-// def p(s):
-//     print("print((unsigned char){'" + "', '".join(s) + "'}, " + str(len(s)) + ");")
-// def p2(s):
-//      for c in s:
-//              print("print_one('" + c + "');")
-//      print("println();")
-
-uint8_t b_i; // index, how many characters have been received unsigned char b_t; // first character
-int16_t duty = 0;
-int16_t set_point = 5000;
-double kp = 10;  // gain
-double ki = 5.4; // 0.01;
-
-unsigned char b[buffer_size]; // buffer for incoming stuff
-unsigned char toolongmsg[] = {'t', 'o', 'o', ' ', 'l', 'o', 'n', 'g'};
-
-
-
-Timer_usec timer_u;
-Timer0_msec timer_msec;
-volatile int32_t counter = 0;
-Moving25 delta_counts;
-volatile bool flag = false;
-volatile uint16_t time = 0;
-int32_t rpm = 0; // initialize just cause
-unsigned int count = 0;
-
+#include<random_defs.h>
 
 
 void reset_buffer()
@@ -87,9 +42,9 @@ int main()
   USART_Init(0); // 1megabaud
   //USART_Init(MYUBRR); // 9600
   context = new Context(new state_intialization);
-  timer_u.init();
-  timer_msec.init(DELTA_T);
-  context->encoder.init();
+  context->timer_u.init();
+  context->timer_msec.init(DELTA_T_MS);
+  context->encoder_int.init();
   
   while (true)
   {
@@ -152,19 +107,21 @@ int main()
 
 ISR(INT0_vect)
 {
-  context->encoder.pin1();
-  delta_counts.set(timer_u.get());
-  timer_u.reset();
+
+  context->encoder_int.pin1();
+  context->delta_counts.set(context->timer_u.get());
+  context->timer_u.reset();
+
 }
 
 ISR(INT1_vect)
 {
-  context->encoder.pin2();
+  context->encoder_int.pin2();
 }
 
 ISR(TIMER0_COMPA_vect)
 {
-  flag = true;
+  context->flag = true;
   TCNT0 = 0;
 }
 

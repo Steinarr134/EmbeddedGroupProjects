@@ -1,4 +1,10 @@
+#ifndef STOPPED_ST_DEFINED
+#define STOPPED_ST_DEFINED
 #include <state.h>
+#include <context.h>
+#include <motor_controller.h>
+#include <hackySerial.h>
+#include <parsed.h>
 
 class state_stopped : public State
 {
@@ -20,3 +26,4 @@ public:
   void set(Parsed p)  {}
   void cmd(unsigned char C)  {}
 };
+#endif

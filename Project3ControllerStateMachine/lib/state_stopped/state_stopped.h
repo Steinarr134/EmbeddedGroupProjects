@@ -1,3 +1,6 @@
+
+#ifndef STOP_ST_DEFINED
+#define STOP_ST_DEFINED
 #include <state.h>
 #include <parsed.h>
 class state_stopped : public State
@@ -11,3 +14,4 @@ public:
   void cmd(unsigned char C) override;
   
 };
+#endif

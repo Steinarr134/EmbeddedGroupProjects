@@ -1,5 +1,6 @@
 #include <state.h>
-
+#include <context.h>
+#include <parsed.h>
 class state_pre_op : public State
 {
 public:

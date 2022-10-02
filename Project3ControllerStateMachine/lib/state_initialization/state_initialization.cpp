@@ -1,6 +1,11 @@
+#ifndef INIT_ST_DEFINED
+#define INIT_ST_DEFINED
+
 #include <state.h>
 #include <context.h>
 #include <hackySerial.h>
+#include <parsed.h>
+
 
 class state_intialization : public State
 {
@@ -18,3 +23,5 @@ public:
   void set(Parsed p)  {}
   void cmd(unsigned char C)  {}
 };
+
+#endif

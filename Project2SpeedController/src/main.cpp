@@ -11,13 +11,6 @@
 #include <encoder_interrupt.h>
 #include "speedometer.h"
 
-#define DELTA_T (int32_t)5
-#define INV_DELTA_T (int32_t)1.0 / ((float)DELTA_T / 1000.0)
-#define PPR (int32_t)(7 * 2 * 2) // 7 pulses per phase and triggering on falling as well
-#define GEAR_REDUCTION (int32_t)101
-#define MAX_PWM 255
-#define MAX_RPM 15000
-
 uint16_t duty = 0;
 int16_t set_point = 5000;
 float kp = 6; // gain

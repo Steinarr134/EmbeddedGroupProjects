@@ -1,3 +1,6 @@
+#ifndef SPEEDO_DEFINED
+#define SPEEDO_DEFINED
+
 #include <avr/io.h>
 
 class Speedo
@@ -26,3 +29,5 @@ void Speedo::reg(long counter){
 float Speedo::speed(){
     return (values[i] - values[(i-1)%10])/(10*interval);
 }
+
+#endif
