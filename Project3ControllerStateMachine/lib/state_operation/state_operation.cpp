@@ -1,15 +1,11 @@
-#ifndef OP_ST_DEFINED
-#define OP_ST_DEFINED
-
 #include <random_defs.h>
 #include <context.h>
 #include <state.h>
 #include <hackySerial.h>
+#include <state_operation.h>
 
-class state_operation : public State
-{
-public:
-  void on_do() override
+state_operation:: ~state_operation(){};
+void state_operation::on_do() 
   {
     if (context_->flag)
     { // if there's a new measurement available
@@ -39,17 +35,13 @@ public:
       context_->count++;
     }
   }
-  void on_entry() override
+  void state_operation::on_entry() 
   {
     context_->motor_controller.unbrake();
     print_one('O');
     print_one('p');
     println();
   }
-  void on_exit() override {}
-  void set(Parsed p) override {}
-  void cmd(unsigned char C) override {}
-
-};
-
-#endif
+  void state_operation::on_exit()  {}
+  void state_operation::set(Parsed p)  {}
+  void state_operation::cmd(unsigned char C)  {}

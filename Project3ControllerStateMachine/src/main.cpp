@@ -6,12 +6,6 @@
 #include <timer0_msec.h>
 #include <encoder_simple.h>
 
-#include <hackySerial.h>
-#include <controller.h> // todo: move PI controller to separate file
-#include <encoder_interrupt.h>
-#include <motor_controller.h>
-#include <speedometer.h>
-
 #include <state.h>
 #include <context.h>
 #include <parsed.h>
@@ -20,25 +14,36 @@
 #include <state_operation.h>
 #include <state_initialization.h>
 
+#include <hackySerial.h>
+#include <controller.h> 
+#include <encoder_interrupt.h>
+#include <motor_controller.h>
+#include <speedometer.h>
 
-// #include "Arduino.h"
-#define FOSC 16000000 // Clock Speed
-#define BAUD 9600
-#define MYUBRR FOSC / 16 / BAUD - 1
 
-// for creating a print statement:
-// def p(s):
-//     print("print((unsigned char){'" + "', '".join(s) + "'}, " + str(len(s)) + ");")
-// def p2(s):
-//      for c in s:
-//              print("print_one('" + c + "');")
-//      print("println();")
 
 #include<random_defs.h>
 
 
+#define FOSC 16000000 // Clock Speed
+#define BAUD 9600
+#define MYUBRR FOSC / 16 / BAUD - 1
+
+uint8_t b_i; // index, how many characters have been received unsigned char b_t; // first character
+
+#define buffer_size 10
+unsigned char b[buffer_size]; // buffer for incoming stuff
+unsigned char toolongmsg[] = {'t', 'o', 'o', ' ', 'l', 'o', 'n', 'g'};
 Context *context;
 
+void reset_buffer()
+{
+    for (int i = 0; i< buffer_size; i++)
+    {
+        b[i] = 0;
+    }
+    b_i = 0;
+}
 
 int main()
 {
@@ -93,7 +98,7 @@ int main()
           else if ('a' <= b[0] && b[0] <= 'z')
           {
             // send parsed to current state
-            context->set(parse());
+            context->set(parse(b, buffer_size));
           }
           reset_buffer();
         }

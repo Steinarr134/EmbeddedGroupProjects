@@ -1,17 +1,13 @@
-#ifndef STOPPED_ST_DEFINED
-#define STOPPED_ST_DEFINED
+
 #include <state.h>
 #include <context.h>
 #include <motor_controller.h>
 #include <hackySerial.h>
 #include <parsed.h>
-
-class state_stopped : public State
-{
-public:
-
-  void on_do()  {}
-  void on_entry() 
+#include <state_stopped.h>
+  state_stopped::~state_stopped(){}
+  void state_stopped::on_do()  {}
+  void state_stopped::on_entry() 
   {
     context_->motor_controller.brake();
     print_one('S');
@@ -20,10 +16,8 @@ public:
     print_one('p');
     println();
   }
-  void on_exit()  {
+  void state_stopped::on_exit()  {
     context_->motor_controller.brake();
   }
-  void set(Parsed p)  {}
-  void cmd(unsigned char C)  {}
-};
-#endif
+  void state_stopped::set(Parsed p)  {}
+  void state_stopped::cmd(unsigned char C)  {}

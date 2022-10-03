@@ -1,16 +1,18 @@
+#ifndef PREOP_ST_DEFINED
+#define PREOP_ST_DEFINED
+
 #include <state.h>
 #include <context.h>
 #include <parsed.h>
-class state_pre_op : public State
-{
-public:
+#include <state_pre_op.h>
 
-  void on_do(){};
+state_pre_op::~state_pre_op(){};
+void state_pre_op::on_do(){};
 
-  void on_entry() {};
+void state_pre_op::on_entry() {};
 
-  void on_exit() {};
-  void set(Parsed p)  {}
-  void cmd(unsigned char C)  {}
+void state_pre_op::on_exit() {};
+void state_pre_op::set(Parsed p)  {}
+void state_pre_op::cmd(unsigned char C)  {}
 
-};
+#endif
