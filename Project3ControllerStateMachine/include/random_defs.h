@@ -10,6 +10,9 @@
 
 
 
+#define MAX_RPM 15000
+#define MAX_PWM 255
+
 #define DELTA_T_MS 5
 #define INV_DELTA_T (int32_t)(1.0 / ((float)DELTA_T / 1000.0))
 #define PPR 7 * 2 // 7 pulses per phase and triggering on falling as well, but only usin single phase
@@ -17,10 +20,5 @@
 #define GEAR_REDUCTION 101
 #define TIMER_RESOLUTION 500e-9
 
-uint8_t b_i; // index, how many characters have been received unsigned char b_t; // first character
-
-#define buffer_size 10
-unsigned char b[buffer_size]; // buffer for incoming stuff
-unsigned char toolongmsg[] = {'t', 'o', 'o', ' ', 'l', 'o', 'n', 'g'};
 
 #endif

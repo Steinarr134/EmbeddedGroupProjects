@@ -7,13 +7,11 @@
 #include <hackySerial.h>
 
 #include <P_controller.h>
-#include "PWM2.h"
+#include <PWM2.h>
 #include <encoder_interrupt.h>
-#include "speedometer.h"
+#include <speedometer.h>
 
-uint16_t duty = 0;
-int16_t set_point = 5000;
-float kp = 6; // gain
+
 
 Encoder_interrupt encoder;
 Digital_out led(5);

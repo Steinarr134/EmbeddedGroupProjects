@@ -15,9 +15,15 @@ protected:
   Context *context_;
 
 public:
+
+  uint8_t b_i; // index, how many characters have been received unsigned char b_t; // first character
+
+  #define buffer_size 10
+  unsigned char b[buffer_size]; // buffer for incoming stuff
+  unsigned char toolongmsg[] = {'t', 'o', 'o', ' ', 'l', 'o', 'n', 'g'};
+
   virtual ~State()
-  {
-  }
+  {}
 
   void set_context(Context *context)
   {

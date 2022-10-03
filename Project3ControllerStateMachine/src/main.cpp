@@ -26,18 +26,6 @@
 #define BAUD 9600
 #define MYUBRR FOSC / 16 / BAUD - 1
 
-#define buffer_size 10
-
-#define DELTA_T (uint8_t)5
-#define INV_DELTA_T (int32_t)(1.0 / ((float)DELTA_T / 1000.0))
-#define PPR (int32_t)(7 * 2) // 7 pulses per phase and triggering on falling as well, but only usin single phase
-#define SECONDS_TO_MINUTE 60
-#define GEAR_REDUCTION (int32_t)101
-#define MAX_PWM 255
-#define MAX_RPM 15000
-#define TIMER_RESOLUTION (double)500e-9
-
-
 // for creating a print statement:
 // def p(s):
 //     print("print((unsigned char){'" + "', '".join(s) + "'}, " + str(len(s)) + ");")
@@ -48,15 +36,6 @@
 
 #include<random_defs.h>
 
-
-void reset_buffer()
-{
-  for (int i = 0; i < buffer_size; i++)
-  {
-    b[i] = 0;
-  }
-  b_i = 0;
-}
 
 Context *context;
 
@@ -133,7 +112,7 @@ ISR(INT0_vect)
 {
 
   context->encoder_int.pin1();
-  context->delta_counts.set(context->timer_u.get());
+  context->delta_counts=context->timer_u.get();
   context->timer_u.reset();
 
 }

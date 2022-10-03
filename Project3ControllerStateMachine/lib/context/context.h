@@ -22,24 +22,6 @@
 #include <encoder_interrupt.h>
 #include <speedometer.h>
 
-#define MAX_PWM 255
-#define MAX_RPM 15000
-#define TIMER_RESOLUTION (double)500e-9
-
-
-// for creating a print statement:
-// def p(s):
-//     print("print((unsigned char){'" + "', '".join(s) + "'}, " + str(len(s)) + ");")
-// def p2(s):
-//      for c in s:
-//              print("print_one('" + c + "');")
-//      print("println();")
-
-uint8_t b_i; // index, how many characters have been received unsigned char b_t; // first character
-int16_t duty = 0;
-int16_t set_point = 5000;
-double kp = 10;  // gain
-double ki = 5.4; // 0.01;
 
 /**
  * The base State class declares methods that all concrete states should
@@ -71,25 +53,28 @@ unsigned int count = 0;
 uint16_t dc;
 int16_t duty = 0;
 int16_t set_point = 5000;
+double kp = 10;  // gain
+double ki = 5.4; // 0.01;
+
 
 
 Encoder_interrupt encoder_int;
-Digital_out led(5);
-Motor_controller motor_controller(0, 1);
+Digital_out led;
+Motor_controller motor_controller;
 PI_controller pi_controller;
 
 
-  Context(State *state) : state_(nullptr)
+  Context(State *state) : state_(nullptr), led(5), motor_controller(0, 1), pi_controller(this->kp, this->ki, DELTA_T_MS)
   {
     // this->motor_controller.in;
     this->led.init();
-    this->pi_controller(this.kp, this.ki, DELTA_T_MS);
     this->transition_to(state);
   }
 
   ~Context()
   {
     delete state_;
+    
   }
 
   /**
