@@ -1,5 +1,4 @@
-#include <hackySerial.h>
-#include <avr/io.h>
+#include<hackySerial.h>
 // for printing to serial::
 // USART code taken from datasheet for printing to serial
 #define FOSC 16000000 // Clock Speed
@@ -31,42 +30,15 @@ void USART_Transmit(unsigned char data)
   UDR0 = data;
 }
 
-bool USART_receive_ready()
-{
-  return (UCSR0A & (1 << RXC0));
-}
-
-unsigned char USART_Receive(void)
-{
-  /* Wait for data to be received */
-  while (!USART_receive_ready())
-    ;
-  /* Get and return received data from buffer */
-  return UDR0;
-}
-
 void print_one(unsigned char b){
   USART_Transmit(b);
 }
-
 
 void println(){
   USART_Transmit((unsigned char)10);
 }
 
-void print(unsigned char arr[], int size)
-{
-  for (int i = 0; i < size; i++)
-  {
-    USART_Transmit(arr[i]);
-  }
-}
 
-void println(unsigned char arr[], int size)
-{
-  print(arr, size);
-  println();
-}
 
 // helper function to print an integer
 void print_i(int32_t i)

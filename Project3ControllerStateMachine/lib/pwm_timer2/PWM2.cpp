@@ -1,5 +1,4 @@
-#ifndef PWM2_H
-#define PWM2_H
+
 #include <PWM2.h>
 #include <avr/interrupt.h>
 
@@ -19,5 +18,3 @@ void PWM2::init(){
 void PWM2::set(uint8_t duty_cycle){
      OCR2A = 255-duty_cycle;
 }
-
-#endif

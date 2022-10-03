@@ -1,10 +1,17 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+
 #include <digital_out.h>
 #include <timer_usec.h>
 #include <timer0_msec.h>
 #include <encoder_simple.h>
+
+#include <hackySerial.h>
+#include <controller.h> 
+#include <encoder_interrupt.h>
+#include <motor_controller.h>
+#include <speedometer.h>
 
 #include <state.h>
 #include <context.h>
@@ -13,14 +20,6 @@
 #include <state_pre_op.h>
 #include <state_operation.h>
 #include <state_initialization.h>
-
-#include <hackySerial.h>
-#include <controller.h> 
-#include <encoder_interrupt.h>
-#include <motor_controller.h>
-#include <speedometer.h>
-
-
 
 #include<random_defs.h>
 

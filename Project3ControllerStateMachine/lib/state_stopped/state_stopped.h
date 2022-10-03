@@ -1,6 +1,7 @@
 
 #ifndef STOP_ST_DEFINED
 #define STOP_ST_DEFINED
+
 #include <state.h>
 #include <parsed.h>
 

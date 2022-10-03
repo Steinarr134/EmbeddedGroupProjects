@@ -9,18 +9,18 @@
  * Context to another State.
  */
 
-#include <random_defs.h>
+// #include <random_defs.h>
 
 #include <digital_out.h>
 #include <timer_usec.h>
 #include <timer0_msec.h>
 #include <encoder_simple.h>
 
-#include <hackySerial.h>
+// #include <hackySerial.h>
 #include <PI_controller.h>
 #include <motor_controller.h>
 #include <encoder_interrupt.h>
-#include <speedometer.h>
+// #include <speedometer.h>
 
 
 /**
@@ -64,55 +64,23 @@ Motor_controller motor_controller;
 PI_controller pi_controller;
 
 
-  Context(State *state) : state_(nullptr), led(5), motor_controller(0, 1), pi_controller(this->kp, this->ki, DELTA_T_MS)
-  {
-    // this->motor_controller.in;
-    this->led.init();
-    this->transition_to(state);
-  }
+  Context(State *state);
 
-  ~Context()
-  {
-    delete state_;
-    
-  }
+  ~Context();
 
   /**
    * The Context allows changing the State object at runtime.
    */
 
-  void transition_to(State *state)
-  {
-    if (this->state_ != nullptr)
-    {
-      this->state_->on_exit();
-      delete this->state_;
-    }
-
-    this->state_ = state;
-
-    this->state_->set_context(this);
-
-    this->state_->on_entry();
-  }
+  void transition_to(State *state);
 
   /**
    * The Context delegates part of its behavior to the current State object.
    */
 
-  void do_work()
-  {
-    this->state_->on_do();
-  }
-
-  void set(Parsed p)
-  {
-    this->state_->set(p);
-  }
-  void cmd(unsigned char C)
-  {
-    this->state_->cmd(C);
-  }
+  void do_work();
+  void set(Parsed p);
+  void cmd(unsigned char C);
 };
 
 #endif
