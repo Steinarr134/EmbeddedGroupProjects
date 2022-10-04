@@ -14,7 +14,7 @@ unsigned char toolongmsg[] = {'t', 'o', 'o', ' ', 'l', 'o', 'n', 'g'};
 // def p(s):
 //     print("print((unsigned char){'" + "', '".join(s) + "'}, " + str(len(s)) + ");")
 // def p2(s):
-//      for c in s: 
+//      for c in s: git 
 //              print("print_one('" + c + "');")
 //      print("println();")
 

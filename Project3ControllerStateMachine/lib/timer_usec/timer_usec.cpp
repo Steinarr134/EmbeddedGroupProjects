@@ -8,11 +8,16 @@ void Timer_usec::init(){
     TCCR1B = 0;                          //
     TCNT1 = 0;                           //  initialize counter value to 0
     //TIMSK1 |= (1 << TOIE1);              // this helps with the ovf, no Idea why 
-    TCCR1B |= (1 << CS11);               // set prescaler to 8 and start the timer
     //sei();                             // enable interrupts
+
+    OCR1A = 0xffff; // assign target count to compare register A (must be less than 65536)
+    TCCR1B |= (1 << WGM12);      // clear the timer on compare match A
+    TIMSK1 |= (1 << OCIE1A);     // set interrupt on compare match A
+    TCCR1B |= (1 << CS11);               // set prescaler to 8 and start the timer
 }
 
 uint16_t Timer_usec::get() {
+    if (overflow()) return 0;
     return TCNT1;
 }
 

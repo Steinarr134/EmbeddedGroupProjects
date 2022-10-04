@@ -54,7 +54,7 @@ void Encoder_interrupt::pin1()
             forward_ = false;
         }
     }
-    PORTB ^= (1 << 5);
+    // PORTB ^= (1 << 5);
     
 }
 
@@ -89,7 +89,7 @@ void Encoder_interrupt::pin2()
             forward_ = true;
         }
     }
-    PORTB ^= (1 << 5);
+    // PORTB ^= (1 << 5);
 }
 
     void
