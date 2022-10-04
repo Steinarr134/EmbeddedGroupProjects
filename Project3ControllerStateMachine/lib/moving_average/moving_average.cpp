@@ -1,25 +1,26 @@
 #include "moving_average.h"
+#include <avr/io.h>
 
 void Moving25::reset()
 {
-    for (int i = 0; i < 25; i++)
+    for (int i = 0; i < MOVINGAVGPERIOD; i++)
     {
         buffer[i] = 0;
     }
 }
 
-void Moving25::set(int val)
+void Moving25::set(long val)
 {
     buffer[b_i] = val;
-    b_i = (b_i + 1) % 25;
+    b_i = (b_i + 1) % MOVINGAVGPERIOD;
 }
 
 double Moving25::get()
 {
-    long sum = 0;
-    for (int i = 0; i < 25; i++)
+    int64_t sum = 0;
+    for (int i = 0; i < MOVINGAVGPERIOD; i++)
     {
         sum += buffer[i];
     }
-    return sum / 25.;
+    return sum / (double)MOVINGAVGPERIOD;
 }

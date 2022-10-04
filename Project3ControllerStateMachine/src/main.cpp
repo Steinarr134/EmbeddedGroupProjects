@@ -61,10 +61,13 @@ Timer_usec timer_u;
 Timer0_msec timer_msec;
 volatile int32_t counter = 0;
 Moving25 delta_counts;
+volatile int delta_count_overflows;
 volatile bool flag = false;
 volatile uint16_t time = 0;
 int32_t rpm = 0; // initialize just cause
 unsigned int count = 0;
+volatile int blink_led_i = 0;
+volatile int blink_led_count = 0;
 
 Parsed parse()
 {
@@ -75,8 +78,13 @@ Parsed parse()
   double value = 0;
   int tens = 1;
   bool decimal_done = false;
+  int sign = 1;
   for (int i = 1; i < buffer_size; i++)
   {
+    if (b[i] == '-'){
+      sign = -1;
+      continue;
+    }
     if (b[i] == '.' || ('0' <= b[i] && b[i] <= '9'))
     {
       if (b[i] == '.')
@@ -87,23 +95,23 @@ Parsed parse()
       }
       if (b[i] == 0)
       {
-        ret.val = value;
+        ret.val = sign*value;
         return ret;
       }
       if (!decimal_done)
       {
-        value *= tens;
+        value *= 10;
         value += b[i] - '0';
         tens *= 10;
       }
       else
       {
-        value += (double)(b[i] - '0') / tens;
+        value += (double)(b[i] - '0') / (double)tens;
         tens *= 10;
       }
     }
   }
-  ret.val = value;
+  ret.val = sign*value;
   return ret;
 }
 
@@ -121,7 +129,13 @@ Context *context;
 class Init : public State
 {
 public:
-  void on_do() override {}
+  void on_do() override {
+    if (flag)
+    {
+      flag = 0;
+      print_i_ln(delta_counts.get());
+    }
+  }
   void on_entry() override
   {
     print_one('I');
@@ -131,13 +145,22 @@ public:
     println();
   }
   void on_exit() override {}
-  void set(Parsed p) override {}
+  void set(Parsed p) override
+  {
+    print_one('s');
+  }
   void cmd(unsigned char C) override {}
 };
 class PreOp : public State
 {
 public:
-  void on_do() override {}
+  void on_do() override {
+    if (flag)
+    {
+      flag = 0;
+      print_3_numbers(set_point, (double)(controller.k_p*1000), (double)(controller.k_i*10));
+    }
+  }
   void on_entry() override
   {
     print_one('P');
@@ -146,9 +169,25 @@ public:
     print_one('O');
     print_one('p');
     println();
+    blink_led_count = 160;
   }
   void on_exit() override {}
-  void set(Parsed p) override {}
+  void set(Parsed p) override{
+        print_one('W');
+  switch (p.what)
+  {
+  case 's':
+    set_point = p.val;
+    break;
+  case 'p':
+    controller.set_kp(p.val);
+    break;
+  case 'i':
+    controller.set_ki(p.val);
+    break;
+  }
+  print_i_ln(set_point);
+  }
   void cmd(unsigned char C) override {}
 };
 
@@ -160,18 +199,18 @@ public:
     if (flag)
     { // if there's a new measurement available
       double dc = delta_counts.get();
-      // convert dc to us, each count is .5µs or .5µs/count => .5µs/count * counts = µs
-      double t = TIMER_RESOLUTION * (double)dc;
-      if (timer_u.overflow())
+      if (dc == 0)
       {
         rpm = 0;
       }
       else
       {
+      // convert dc to us, each count is .5µs or .5µs/count => .5µs/count * counts = µs
+        double t = TIMER_RESOLUTION * (double)dc;
         rpm = (int32_t)(double)SECONDS_TO_MINUTE / ((double)PPR * t);
         if (!encoder.forward())
         {
-          rpm = -rpm;
+          rpm = -rpm; // MISSING A MINUS!
         }
         if (rpm > MAX_RPM || rpm < -MAX_RPM)
         { // at startup rpm can get to some insane number that hacky serial can't even comprehend
@@ -179,8 +218,14 @@ public:
         }
       }
       duty = (int16_t)controller.update(set_point, rpm); // RPM of input shaft, not rpm of output shaft!!
-      print_3_numbers(set_point, rpm, duty);
+      print_3_numbers(set_point, rpm, (set_point/255 + 1)*duty);
+      // if (duty == 0){
+      //   motor_controller.brake();
+      // }
+      // else{
+      //   motor_controller.unbrake();
       motor_controller.update(duty);
+      // }
       flag = false;
       count++;
     }
@@ -191,9 +236,25 @@ public:
     print_one('O');
     print_one('p');
     println();
+    blink_led_count = 0;
   }
   void on_exit() override {}
-  void set(Parsed p) override {}
+  void set(Parsed p) override
+  {
+    print_one('W');
+    switch (p.what){
+      case 's':
+        set_point = p.val;
+        break;
+      case 'p':
+        controller.set_kp(p.val);
+        break;
+      case 'i':
+        controller.set_ki(p.val);
+        break;
+    }
+    print_i_ln(set_point);
+  }
   void cmd(unsigned char C) override {}
 };
 
@@ -209,9 +270,12 @@ public:
     print_one('o');
     print_one('p');
     println();
+    blink_led_count = 80;
   }
   void on_exit() override {}
-  void set(Parsed p) override {}
+  void set(Parsed p) override {
+
+  }
   void cmd(unsigned char C) override {}
 };
 
@@ -267,6 +331,7 @@ int main()
           else if ('a' <= b[0] && b[0] <= 'z')
           {
             // send parsed to current state
+            print_one('#');
             context->set(parse());
           }
           reset_buffer();
@@ -285,8 +350,28 @@ int main()
 ISR(INT0_vect)
 {
   encoder.pin1();
-  delta_counts.set(timer_u.get());
+  int t = timer_u.get();
   timer_u.reset();
+  if (delta_count_overflows > 0){
+    delta_counts.set(delta_count_overflows * (long)0xffff + t);
+    delta_count_overflows = 0;
+  }
+  else{
+    delta_counts.set(t);
+  }
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+  if (delta_count_overflows > 100)
+  {
+    // delta_counts.reset();
+    return;
+  }
+  delta_count_overflows++;
+  for (int i=0; i< delta_count_overflows; i++){
+    delta_counts.set(delta_count_overflows*(long)0xffff);
+  }
 }
 
 ISR(INT1_vect)
@@ -298,6 +383,24 @@ ISR(TIMER0_COMPA_vect)
 {
   flag = true;
   TCNT0 = 0;
+  if (blink_led_count == 0)
+  {
+    PORTB |= (1<<PORTB5);
+  }
+  else
+  {
+    blink_led_i = (blink_led_i + 1)%blink_led_count;
+    if (blink_led_i < blink_led_count/4)
+    {
+      PORTB |= (1<<PORTB5);
+    }
+    else
+    {
+      PORTB &= ~(1<<PORTB5);
+    }
+    
+  }
+  
 }
 
 /*
