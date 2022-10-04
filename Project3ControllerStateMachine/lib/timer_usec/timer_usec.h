@@ -1,6 +1,3 @@
-#ifndef TIMER_USEC_DEFINED
-#define TIMER_USEC_DEFINED
-
 #include <stdint.h>
 class Timer_usec
 {
@@ -11,4 +8,3 @@ public:
     void reset();
     bool overflow();
 };
-#endif

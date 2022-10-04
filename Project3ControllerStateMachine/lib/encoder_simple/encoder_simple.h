@@ -1,6 +1,3 @@
-#ifndef ENCODER_DEFINED
-#define ENCODER_DEFINED
-
 #include <digital_in.h>
 
 class Encoder_simple
@@ -17,4 +14,4 @@ private:
     bool last_state1;
     bool last_state2;
 };
-#endif
+

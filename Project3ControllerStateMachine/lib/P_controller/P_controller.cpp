@@ -1,8 +1,9 @@
-
-
-#include <P_controller.h>
-P_controller::P_controller(double K_p) {
+#include "P_controller.h"
+#include <avr/io.h>
+P_controller::P_controller(double K_p, uint16_t max_rpm, uint8_t max_pwm) {
   k_p=K_p;
+  max_rpm_ = max_rpm;
+  max_pwm_ = max_pwm;
 }
 
 uint8_t P_controller::update(double ref, double actual){
@@ -12,5 +13,5 @@ uint8_t P_controller::update(double ref, double actual){
   if (u>255) u=255;
   if (u<0) u=0;
 
-  return u;
+  return (uint8_t)u;
 }

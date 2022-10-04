@@ -1,7 +1,3 @@
-
-#ifndef ENCODER_INT_DEFINED
-#define ENCODER_INT_DEFINED
-
 class Encoder_interrupt
 {
 public:
@@ -21,4 +17,3 @@ private:
     void set_interrupt_d1();
     void set_interrupt_d2();
 };
-#endif
