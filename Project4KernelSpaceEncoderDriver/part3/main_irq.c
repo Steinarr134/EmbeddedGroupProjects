@@ -56,12 +56,12 @@ static int __init erpi_gpio_init(void)
     // This next call requests an interrupt line   
     resultA = request_irq(irqNumberA,          // interrupt number requested            
         (irq_handler_t) erpi_gpio_irq_handlerA,   // handler function            
-        IRQF_TRIGGER_RISING,                     // on rising edge (press, not release)            
+        IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,                     // on rising edge (press, not release)            
         "erpi_gpio_handlerA",                     // used in /proc/interrupts
         NULL);                                   // *dev_id for shared interrupt lines
     resultB = request_irq(irqNumberB,          // interrupt number requested            
         (irq_handler_t) erpi_gpio_irq_handlerB,   // handler function            
-        IRQF_TRIGGER_RISING,                     // on rising edge (press, not release)            
+        IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,                     // on rising edge (press, not release)            
         "erpi_gpio_handlerB",                     // used in /proc/interrupts
         NULL);                                   // *dev_id for shared interrupt lines
     printk(KERN_INFO "GPIO_TEST: IRQ A request result is: %d\n", resultA);
