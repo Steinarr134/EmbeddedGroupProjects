@@ -76,12 +76,34 @@ The four different methods for interfacing with the GPIO pins were tested.
 \subsection{Test Setup}
 A function generator ( WHAT MODEL?) was hooked up to pin ????????? and set to output a square wave with amplitude 3 volts and frequency 1kHz. A Rhode\&Schwartz RBT2004 oscilloscope was used to probe the input and output pins on different channels. The oscilloscope was then set to measure the time difference between rising edges.
 
+With each method a screenshot of the oscilloscope was taken and the CPU load was read by running top in another terminal window.
+
 \subsection{Using sysfs from a shell script}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Project4KernelSpaceEncoderDriver/part2_shell_mirror.PNG}
+    \caption{Response time of a shell script utilizing sysfs to mirror a pin}
+    \label{fig:shell}
+\end{figure}
+The CPU usage of the bash script was around 19\%.
+
 \subsection{Using sysfs from a C/C++ application}
+
+The CPU usage of the program was 100\%
+
 \subsection{Using sysfs and poll() from a C/C++ application}
+
+The CPU usage was 0.3\%
+
 \subsection{A kernel module using interrupts}
 
+
+
+
+
+\subsection{Discussion}
+The minimum response time needed is ?????? microseconds (MAYBE QUOTE PREVIOUS REPORT?) therefore something something
 
 \section{Part 3}
 
