@@ -6,36 +6,39 @@
 
 int main()
 {
-    //Enable gpio25
+    //Enable gpio27
     int fd = open("/sys/class/gpio/export", O_WRONLY);
-    write(fd, "25", 2);
+    write(fd, "27", 2);
     close(fd);
 
-    //Set gpio25 as input
-    fd = open("/sys/class/gpio/gpio25/direction", O_WRONLY);
+    //Set gpio27 as input
+    fd = open("/sys/class/gpio/gpio27/direction", O_WRONLY);
     write(fd, "in", 2);
     close(fd);
 
-    //Set gpio25 interrupt
-    fd = open("/sys/class/gpio/gpio25/edge", O_WRONLY);
+    //Set gpio27 interrupt
+    fd = open("/sys/class/gpio/gpio27/edge", O_WRONLY);
     //write(fd, "falling", 7);
-    write(fd, "both", 4);
+    write(fd, "rising", 6);
     close(fd);
 
     struct pollfd pfd;
     pfd.fd = fd;
     pfd.events = POLLPRI;
 
-    for(int i=0; i<10; i++)
+    for(int i=0; i<100; i++)
     {
         //Wait for event
-        fd = open("/sys/class/gpio/gpio25/value", O_RDONLY);       
+        fd = open("/sys/class/gpio/gpio27/value", O_RDONLY);
+        pfd.fd = fd;    
         int ret = poll(&pfd, 1, 3000);
         char c;
         read(fd, &c, 1);
         close(fd);
-        if(ret == 0)
+        if(ret == 0){
             printf("Timeout\n");
+            break;
+        }
         else
             if(c == '0')
                 printf("Push\n");
@@ -43,9 +46,9 @@ int main()
                 printf("Release\n");
     }
 
-    //Disable gpio25
+    //Disable gpio27
     fd = open("/sys/class/gpio/unexport", O_WRONLY);
-    write(fd, "25", 2);
+    write(fd, "27", 2);
     close(fd);
 
     return(0);
