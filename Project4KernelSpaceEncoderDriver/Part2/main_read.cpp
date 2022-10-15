@@ -29,12 +29,11 @@ int main() {
     export_pin(17, INPUT);
     export_pin(27, OUTPUT);
     std::ifstream pin_in ("/sys/class/gpio/gpio17/value");
-    std::ofstream pin_out ("/sys/class/gpio/gpio27/value");
+    std::ofstream pin_out ("/sys/class/gpio/gpio27/value"); // probably should be iostream to read state of output pin
     char LOW[1] = {'0'};
     char HIGH[1] = {'1'};
     while(1) {
         std::cout<<pin_in.get()-'0'<<"\n";
-        //pin_out<<"1";
         if(!pin_out.write(HIGH, 1)) {
             cout<<"write failed??";
         }
