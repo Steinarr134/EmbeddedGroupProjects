@@ -1,0 +1,1 @@
+cmd_/home/pi/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/test_stuff/modules.order := {   echo /home/pi/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/test_stuff/ebbchar.ko; :; } | awk '!x[$$0]++' - > /home/pi/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/test_stuff/modules.order

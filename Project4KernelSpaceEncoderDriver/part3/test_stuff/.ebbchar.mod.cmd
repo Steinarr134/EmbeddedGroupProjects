@@ -1,0 +1,1 @@
+cmd_/home/pi/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/test_stuff/ebbchar.mod := { echo  /home/pi/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/test_stuff/ebbchar.o;  echo; } > /home/pi/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/test_stuff/ebbchar.mod

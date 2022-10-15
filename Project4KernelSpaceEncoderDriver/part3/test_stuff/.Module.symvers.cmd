@@ -1,0 +1,1 @@
+cmd_/home/pi/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/test_stuff/Module.symvers := sed 's/\.ko$$/\.o/' /home/pi/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/test_stuff/modules.order | scripts/mod/modpost -m -a  -o /home/pi/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/test_stuff/Module.symvers -e -i Module.symvers   -T -
