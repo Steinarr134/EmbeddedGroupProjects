@@ -1,1 +1,0 @@
-cmd_/home/jetson/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/modules.order := {   echo /home/jetson/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/main_irq.ko; :; } | awk '!x[$$0]++' - > /home/jetson/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/modules.order

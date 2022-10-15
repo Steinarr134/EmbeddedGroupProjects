@@ -1,1 +1,0 @@
-cmd_/home/jetson/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/Module.symvers := sed 's/\.ko$$/\.o/' /home/jetson/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/modules.order | scripts/mod/modpost -m -a  -o /home/jetson/EmbeddedGroupProjects/Project4KernelSpaceEncoderDriver/part3/Module.symvers -e -i Module.symvers   -T -
