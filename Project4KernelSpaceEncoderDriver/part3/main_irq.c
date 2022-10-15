@@ -141,7 +141,7 @@ MODULE_PARM_DESC(name, "The name to display in /var/log/kern.log");
 
 static ssize_t mydev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
     char msg[16];
-    int msg_len = sprintf(msg, "%d", numberPresses);
+    int msg_len = sprintf(msg, "%d\r", numberPresses);
    int error_count = 0;
    // copy_to_user has the format ( * to, *from, size) and returns 0 on success
    error_count = copy_to_user(buffer, msg, msg_len);
@@ -149,7 +149,7 @@ static ssize_t mydev_read(struct file *filep, char *buffer, size_t len, loff_t *
 
    if (error_count==0){            // if true then have success
       printk(KERN_INFO "EBBChar: Sent %d characters to the user\n", msg_len);
-      return (0);  // clear the position to the start and return 0
+      return (msg_len);  // clear the position to the start and return 0
    }
    else {
       printk(KERN_INFO "EBBChar: Failed to send %d characters to the user\n", error_count);
