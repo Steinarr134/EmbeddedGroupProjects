@@ -29,17 +29,22 @@ int main() {
     export_pin(17, INPUT);
     export_pin(27, OUTPUT);
     std::ifstream pin_in ("/sys/class/gpio/gpio17/value");
-    std::ofstream pin_out ("/sys/class/gpio27/value");
+    std::ofstream pin_out ("/sys/class/gpio/gpio27/value");
     char LOW[1] = {'0'};
     char HIGH[1] = {'1'};
     while(1) {
-        std::cout<<pin_in.get()<<"\n";
-        pin_out.write(HIGH, 1);
+        std::cout<<pin_in.get()-'0'<<"\n";
+        //pin_out<<"1";
+        if(!pin_out.write(HIGH, 1)) {
+            cout<<"write failed??";
+        }
         pin_in.seekg(0, fstream::beg);
+        pin_out.seekp(0, fstream::beg);
         sleep(1);
-        std::cout<<pin_in.get()<<"\n";
+        std::cout<<pin_in.get()-'0'<<"\n";
         pin_in.seekg(0, fstream::beg);
         pin_out.write(LOW, 1);
+        pin_out.seekp(0, fstream::beg);
         sleep(1);
 
     }
