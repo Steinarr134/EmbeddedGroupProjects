@@ -111,15 +111,14 @@ void export_pwm(uint32_t period, uint32_t initial_duty) { // 0 in, 1 out
     fOut4.close();
     usleep(100000);
 }
+std::ofstream pwmOut ("/sys/class/pwm/pwmchip0/pwm0/duty_cycle");
 void set_pwm(int pwm) {
     int period = pwm*(int)1e6/100;
 
     char out[50];
     int len = sprintf(out, "%d", period);
-    std::ofstream fOut ("/sys/class/pwm/pwmchip0/pwm0/duty_cycle");
-    fOut.write(out, len);
-    fOut.close();
-    usleep(100000);
+    pwmOut.seekp(0, std::ofstream::beg);
+    pwmOut.write(out, len);
 }
 
 std::ifstream fOut ("/dev/mydev");
@@ -148,65 +147,38 @@ uint64_t get_pulses() {
     return amount;
 }
 
-typedef struct
-{
-    struct timeval startTimeVal;
-} TIMER_usecCtx_t;
-
-void TIMER_usecStart(TIMER_usecCtx_t* ctx)
-{
-    gettimeofday(&ctx->startTimeVal, NULL);
-}
-
-unsigned int TIMER_usecElapsedUs(TIMER_usecCtx_t* ctx)
-{
-    unsigned int rv;
-
-    /* get current time */
-    struct timeval nowTimeVal;
-    gettimeofday(&nowTimeVal, NULL);
-
-    /* compute diff */
-    rv = 1000000 * (nowTimeVal.tv_sec - ctx->startTimeVal.tv_sec) + nowTimeVal.tv_usec - ctx->startTimeVal.tv_usec;
-
-    return rv;
-}
-
-
 int main() {
     std::cout<<get_pulses()<<'\n';
-    export_pwm(1*1000*1000, 500*1000);
-    PI_controller pic = PI_controller(1, 5, 15000, 100, 100);
+    export_pwm(1*1000*1000, 0);
+    PI_controller pic = PI_controller(3.4, 120, 15000, 100, 5);
 
    uint64_t pulses = get_pulses(); 
 
     uint64_t delta_pulses;
-    int count = 1000;
     int set_point = 5000;
 
-    TIMER_usecCtx_t timer;
-    TIMER_usecStart(&timer);
+    bool ran = false;
+    uint64_t rv;
+    struct timeval nowTimeVal;
     while(1) {
-        if (TIMER_usecElapsedUs(&timer) > (int)5e2) // 100ms???
-        {
-            //struct timeval nowTimeVal;
-            //gettimeofday(&nowTimeVal, NULL);
-            //std::cout<< nowTimeVal.tv_usec<<'\n';
-
-            uint64_t tmp_pulses = get_pulses();
-            delta_pulses = tmp_pulses - pulses;
-            //std::cout<<tmp_pulses<<" "<<pulses<<" "<<delta_pulses<<'\n';
-            int32_t rpm = delta_pulses * (int32_t)60 * 10 / 28; // rpm = dc * (int32_t)60 * INV_DELTA_T / PPR;
-            //std::cout<<rpm<<'\n';
-            set_pwm(pic.update(set_point, rpm));
-            pulses = tmp_pulses;
-            count--;
-            if(!count) {
-                count = 100;
-                set_point = 1000;
-            }
-            TIMER_usecStart(&timer);
-        }
+        uint64_t tmp_pulses = get_pulses();  
+        delta_pulses = tmp_pulses - pulses;
+        int32_t rpm = delta_pulses * (int32_t)60 * 200 / 28; // rpm = dc * (int32_t)60 * INV_DELTA_T / PPR;
+        std::cout<<rpm<<'\n';
+        set_pwm(pic.update(set_point, rpm));
+        pulses = tmp_pulses;
+        usleep(5000);
+        //count--;
+        //if(!count) {
+        //    count = 100;
+        //    set_point = 1000;
+        //}
+        //usleep(5000);
+        //std::cout<<rv<<'\n';
+        //struct timeval nowTimeVal;
+        //gettimeofday(&nowTimeVal, NULL);
+        //std::cout<<"asdf"<<nowTimeVal.tv_sec<<'\n';
+        
     }
 
     return 0;
