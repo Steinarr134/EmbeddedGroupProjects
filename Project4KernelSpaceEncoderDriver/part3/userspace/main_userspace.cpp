@@ -152,33 +152,20 @@ int main() {
     export_pwm(1*1000*1000, 0);
     PI_controller pic = PI_controller(3.4, 120, 15000, 100, 5);
 
-   uint64_t pulses = get_pulses(); 
-
+    uint64_t pulses = get_pulses(); 
     uint64_t delta_pulses;
     int set_point = 5000;
-
-    bool ran = false;
-    uint64_t rv;
-    struct timeval nowTimeVal;
+         struct timeval nowTimeVal;
     while(1) {
         uint64_t tmp_pulses = get_pulses();  
         delta_pulses = tmp_pulses - pulses;
         int32_t rpm = delta_pulses * (int32_t)60 * 200 / 28; // rpm = dc * (int32_t)60 * INV_DELTA_T / PPR;
-        std::cout<<rpm<<'\n';
         set_pwm(pic.update(set_point, rpm));
         pulses = tmp_pulses;
+        gettimeofday(&nowTimeVal, NULL);
+        //std::cout<< 1000000* (uint64_t)nowTimeVal.tv_sec + nowTimeVal.tv_usec<<'\n';
+
         usleep(5000);
-        //count--;
-        //if(!count) {
-        //    count = 100;
-        //    set_point = 1000;
-        //}
-        //usleep(5000);
-        //std::cout<<rv<<'\n';
-        //struct timeval nowTimeVal;
-        //gettimeofday(&nowTimeVal, NULL);
-        //std::cout<<"asdf"<<nowTimeVal.tv_sec<<'\n';
-        
     }
 
     return 0;
