@@ -1,6 +1,4 @@
-
-
-#include <linux/init.h>           // Macros used to mark up functions e.g. __init __exit
+// #include <linux/init.h>           // Macros used to mark up functions e.g. __init __exit
 #include <linux/module.h>         // Core header for loading LKMs into the kernel
 #include <linux/device.h>         // Header to support the kernel Driver Model
 #include <linux/kernel.h>         // Contains types, macros, functions for the kernel
@@ -50,6 +48,18 @@ static int     dev_release(struct inode *, struct file *);
 static ssize_t dev_read(struct file *, char *, size_t, loff_t *);
 static ssize_t dev_write(struct file *, const char *, size_t, loff_t *);
 
+
+
+static unsigned int gpioLED = 27;             // pin 11 (GPIO17) 
+static unsigned int gpioButton = 17;          // pin 13 (GPIO27) 
+static unsigned int irqNumber;                // share IRQ num within file 
+static unsigned int numberPresses = 0;        // store number of presses 
+static bool         ledOn = 0;                // used to invert state of LED
+
+// prototype for the custom IRQ handler function, function below 
+static irq_handler_t  erpi_gpio_irq_handlerA(unsigned int irq, 
+                                            void *dev_id, struct pt_regs *regs);
+
 /** @brief Devices are represented as file structure in the kernel. The file_operations structure from
  *  /linux/fs.h lists the callback functions that you wish to associated with your file operations
  *  using a C99 syntax structure. char devices usually implement open, read, write and release calls
@@ -69,6 +79,43 @@ static struct file_operations fops =
  *  @return returns 0 if successful
  */
 static int __init myencoder_init(void){
+
+    int result = 0;
+    printk(KERN_INFO "GPIO_TEST: Initializing the GPIO_TEST LKM\n");
+
+    if (!gpio_is_valid(gpioLED)) 
+    {
+        printk(KERN_INFO "GPIO_TEST: invalid LED GPIO\n");
+        return -ENODEV;
+    }   
+
+    ledOn = true;
+
+    gpio_request(gpioLED, "sysfs");          // request LED GPIO
+    gpio_direction_output(gpioLED, ledOn);   // set in output mode and on 
+    // gpio_set_value(gpioLED, ledOn);       // not reqd - see line above
+    gpio_export(gpioLED, false);             // appears in /sys/class/gpio
+                                             // false prevents in/out change   
+    gpio_request(gpioButton, "sysfs");       // set up gpioButton   
+    gpio_direction_input(gpioButton);        // set up as input   
+    gpio_set_debounce(gpioButton, 200);      // debounce delay of 200ms
+    gpio_export(gpioButton, false);          // appears in /sys/class/gpio
+
+   //  printk(KERN_INFO "GPIO_TEST: button value is currently: %d\n", 
+   //         gpio_get_value(gpioButton));
+
+    irqNumber = gpio_to_irq(gpioButton);     // map GPIO to IRQ number
+    printk(KERN_INFO "GPIO_TEST: button mapped to IRQ: %d\n", irqNumber);
+
+   //  // This next call requests an interrupt line   
+    result = request_irq(irqNumber,          // interrupt number requested            
+        (irq_handler_t) erpi_gpio_irq_handlerA,   // handler function            
+        IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,                     // on rising edge (press, not release)            
+        "erpi_gpio_handler",                     // used in /proc/interrupts
+        NULL);                                   // *dev_id for shared interrupt lines
+    printk(KERN_INFO "GPIO_TEST: IRQ request result is: %d\n", result);
+    ledOn = gpio_get_value(gpioButton);                     // invert the LED state
+    gpio_set_value(gpioLED, ledOn);     // set LED accordingly
    printk(KERN_INFO "myencoder: Initializing the myencoder LKM\n");
 
    // Try to dynamically allocate a major number for the device -- more difficult but worth it
@@ -97,6 +144,8 @@ static int __init myencoder_init(void){
       return PTR_ERR(myencoderDevice);
    }
    printk(KERN_INFO "myencoder: device class created correctly\n"); // Made it! device was initialized
+
+   
    return 0;
 }
 
@@ -110,6 +159,18 @@ static void __exit myencoder_exit(void){
    class_destroy(myencoderClass);                             // remove the device class
    unregister_chrdev(majorNumber, DEVICE_NAME);             // unregister the major number
    printk(KERN_INFO "myencoder: Goodbye from the LKM!\n");
+
+    printk(KERN_INFO "GPIO_TEST: button value is currently: %d\n", 
+           gpio_get_value(gpioButton));
+
+    printk(KERN_INFO "GPIO_TEST: pressed %d times\n", numberPresses);
+    gpio_set_value(gpioLED, 0);              // turn the LED off
+    gpio_unexport(gpioLED);                  // unexport the LED GPIO   
+    free_irq(irqNumber, NULL);               // free the IRQ number, no *dev_id   
+    gpio_unexport(gpioButton);               // unexport the Button GPIO   
+    gpio_free(gpioLED);                      // free the LED GPIO
+    gpio_free(gpioButton);                   // free the Button GPIO
+    printk(KERN_INFO "GPIO_TEST: Goodbye from the LKM!\n"); 
 }
 
 /** @brief The device open function that is called each time the device is opened
@@ -175,77 +236,65 @@ static int dev_release(struct inode *inodep, struct file *filep){
  *  identify the initialization function at insertion time and the cleanup function (as
  *  listed above)
  */
-module_init(myencoder_init);
-module_exit(myencoder_exit);
 
 
 
 
-static unsigned int gpioLED = 27;             // pin 11 (GPIO17) 
-static unsigned int gpioButton = 17;          // pin 13 (GPIO27) 
-static unsigned int irqNumber;                // share IRQ num within file 
-static unsigned int numberPresses = 0;        // store number of presses 
-static bool         ledOn = 0;                // used to invert state of LED
+// static int __init erpi_gpio_init(void) 
+// {
+//     int result = 0;
+//     printk(KERN_INFO "GPIO_TEST: Initializing the GPIO_TEST LKM\n");
 
-// prototype for the custom IRQ handler function, function below 
-static irq_handler_t  erpi_gpio_irq_handler(unsigned int irq, 
-                                            void *dev_id, struct pt_regs *regs);
+//     if (!gpio_is_valid(gpioLED)) 
+//     {
+//         printk(KERN_INFO "GPIO_TEST: invalid LED GPIO\n");
+//         return -ENODEV;
+//     }   
 
-static int __init erpi_gpio_init(void) 
-{
-    int result = 0;
-    printk(KERN_INFO "GPIO_TEST: Initializing the GPIO_TEST LKM\n");
+//     ledOn = true;
 
-    if (!gpio_is_valid(gpioLED)) 
-    {
-        printk(KERN_INFO "GPIO_TEST: invalid LED GPIO\n");
-        return -ENODEV;
-    }   
+//     gpio_request(gpioLED, "sysfs");          // request LED GPIO
+//     gpio_direction_output(gpioLED, ledOn);   // set in output mode and on 
+//     // gpio_set_value(gpioLED, ledOn);       // not reqd - see line above
+//     gpio_export(gpioLED, false);             // appears in /sys/class/gpio
+//                                              // false prevents in/out change   
+//     gpio_request(gpioButton, "sysfs");       // set up gpioButton   
+//     gpio_direction_input(gpioButton);        // set up as input   
+//     gpio_set_debounce(gpioButton, 200);      // debounce delay of 200ms
+//     gpio_export(gpioButton, false);          // appears in /sys/class/gpio
 
-    ledOn = true;
+//     printk(KERN_INFO "GPIO_TEST: button value is currently: %d\n", 
+//            gpio_get_value(gpioButton));
 
-    gpio_request(gpioLED, "sysfs");          // request LED GPIO
-    gpio_direction_output(gpioLED, ledOn);   // set in output mode and on 
-    // gpio_set_value(gpioLED, ledOn);       // not reqd - see line above
-    gpio_export(gpioLED, false);             // appears in /sys/class/gpio
-                                             // false prevents in/out change   
-    gpio_request(gpioButton, "sysfs");       // set up gpioButton   
-    gpio_direction_input(gpioButton);        // set up as input   
-    gpio_set_debounce(gpioButton, 200);      // debounce delay of 200ms
-    gpio_export(gpioButton, false);          // appears in /sys/class/gpio
+//     irqNumber = gpio_to_irq(gpioButton);     // map GPIO to IRQ number
+//     printk(KERN_INFO "GPIO_TEST: button mapped to IRQ: %d\n", irqNumber);
 
-    printk(KERN_INFO "GPIO_TEST: button value is currently: %d\n", 
-           gpio_get_value(gpioButton));
+//     // This next call requests an interrupt line   
+//     result = request_irq(irqNumber,          // interrupt number requested            
+//         (irq_handler_t) erpi_gpio_irq_handlerA,   // handler function            
+//         IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,                     // on rising edge (press, not release)            
+//         "erpi_gpio_handler",                     // used in /proc/interrupts
+//         NULL);                                   // *dev_id for shared interrupt lines
+//     printk(KERN_INFO "GPIO_TEST: IRQ request result is: %d\n", result);
+//     ledOn = gpio_get_value(gpioButton);                     // invert the LED state
+//     gpio_set_value(gpioLED, ledOn);     // set LED accordingly
+//     return result;
+// }
 
-    irqNumber = gpio_to_irq(gpioButton);     // map GPIO to IRQ number
-    printk(KERN_INFO "GPIO_TEST: button mapped to IRQ: %d\n", irqNumber);
+// static void __exit erpi_gpio_exit(void) 
+// {   
+//     printk(KERN_INFO "GPIO_TEST: button value is currently: %d\n", 
+//            gpio_get_value(gpioButton));
 
-    // This next call requests an interrupt line   
-    result = request_irq(irqNumber,          // interrupt number requested            
-        (irq_handler_t) erpi_gpio_irq_handlerA,   // handler function            
-        IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,                     // on rising edge (press, not release)            
-        "erpi_gpio_handler",                     // used in /proc/interrupts
-        NULL);                                   // *dev_id for shared interrupt lines
-    printk(KERN_INFO "GPIO_TEST: IRQ request result is: %d\n", result);
-    ledOn = gpio_get_value(gpioButton);                     // invert the LED state
-    gpio_set_value(gpioLED, ledOn);     // set LED accordingly
-    return result;
-}
-
-static void __exit erpi_gpio_exit(void) 
-{   
-    printk(KERN_INFO "GPIO_TEST: button value is currently: %d\n", 
-           gpio_get_value(gpioButton));
-
-    printk(KERN_INFO "GPIO_TEST: pressed %d times\n", numberPresses);
-    gpio_set_value(gpioLED, 0);              // turn the LED off
-    gpio_unexport(gpioLED);                  // unexport the LED GPIO   
-    free_irq(irqNumber, NULL);               // free the IRQ number, no *dev_id   
-    gpio_unexport(gpioButton);               // unexport the Button GPIO   
-    gpio_free(gpioLED);                      // free the LED GPIO
-    gpio_free(gpioButton);                   // free the Button GPIO
-    printk(KERN_INFO "GPIO_TEST: Goodbye from the LKM!\n"); 
-}
+//     printk(KERN_INFO "GPIO_TEST: pressed %d times\n", numberPresses);
+//     gpio_set_value(gpioLED, 0);              // turn the LED off
+//     gpio_unexport(gpioLED);                  // unexport the LED GPIO   
+//     free_irq(irqNumber, NULL);               // free the IRQ number, no *dev_id   
+//     gpio_unexport(gpioButton);               // unexport the Button GPIO   
+//     gpio_free(gpioLED);                      // free the LED GPIO
+//     gpio_free(gpioButton);                   // free the Button GPIO
+//     printk(KERN_INFO "GPIO_TEST: Goodbye from the LKM!\n"); 
+// }
 
 // here is the old interrupt handler,
 // we have to add another one and change them to mirror our old encoder code:
@@ -320,7 +369,7 @@ static void __exit erpi_gpio_exit(void)
 //     // PORTB ^= (1 << 5);
 // }
 
-static irq_handler_t erpi_gpio_irq_handler_A(unsigned int irq, 
+static irq_handler_t erpi_gpio_irq_handlerA(unsigned int irq, 
                                            void *dev_id, struct pt_regs *regs) 
 {   
     // pin1()
@@ -328,14 +377,17 @@ static irq_handler_t erpi_gpio_irq_handler_A(unsigned int irq,
     gpio_set_value(gpioLED, ledOn);     // set LED accordingly
     return (irq_handler_t) IRQ_HANDLED;      // announce IRQ handled 
 }
-static irq_handler_t erpi_gpio_irq_handler_B(unsigned int irq, 
-                                           void *dev_id, struct pt_regs *regs) 
-{   
-    pin2()
-    return (irq_handler_t) IRQ_HANDLED;      // announce IRQ handled 
-}
+// static irq_handler_t erpi_gpio_irq_handler_B(unsigned int irq, 
+//                                            void *dev_id, struct pt_regs *regs) 
+// {   
+//    //  pin2()
+//     return (irq_handler_t) IRQ_HANDLED;      // announce IRQ handled 
+// }
 
-module_init(erpi_gpio_init);
-module_exit(erpi_gpio_exit);
+// module_init(erpi_gpio_init);
+// module_exit(erpi_gpio_exit);
 
 
+
+module_init(myencoder_init);
+module_exit(myencoder_exit);

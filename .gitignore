@@ -46,3 +46,4 @@
 *.o
 *.order
 *.symvers
+*.cmd
