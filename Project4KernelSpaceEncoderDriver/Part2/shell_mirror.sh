@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #  script to mirror pin 27 to pin 17
 
