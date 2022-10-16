@@ -26,7 +26,7 @@ int main()
     pfd.fd = fd;
     pfd.events = POLLPRI;
 
-    for(int i=0; i<100; i++)
+    while (1)
     {
         //Wait for event
         fd = open("/sys/class/gpio/gpio27/value", O_RDONLY);
