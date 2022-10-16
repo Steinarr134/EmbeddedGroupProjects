@@ -98,12 +98,11 @@ static int __init myencoder_init(void){
                                              // false prevents in/out change   
     gpio_request(gpioButton, "sysfs");       // set up gpioButton   
     gpio_direction_input(gpioButton);        // set up as input   
-    gpio_set_debounce(gpioButton, 200);      // debounce delay of 200ms
+   //  gpio_set_debounce(gpioButton, 200);      // debounce delay of 200ms
     gpio_export(gpioButton, false);          // appears in /sys/class/gpio
 
    //  printk(KERN_INFO "GPIO_TEST: button value is currently: %d\n", 
    //         gpio_get_value(gpioButton));
-
     irqNumber = gpio_to_irq(gpioButton);     // map GPIO to IRQ number
     printk(KERN_INFO "GPIO_TEST: button mapped to IRQ: %d\n", irqNumber);
 
@@ -114,7 +113,7 @@ static int __init myencoder_init(void){
         "erpi_gpio_handler",                     // used in /proc/interrupts
         NULL);                                   // *dev_id for shared interrupt lines
     printk(KERN_INFO "GPIO_TEST: IRQ request result is: %d\n", result);
-    ledOn = gpio_get_value(gpioButton);                     // invert the LED state
+    ledOn = !gpio_get_value(gpioButton);                     // invert the LED state
     gpio_set_value(gpioLED, ledOn);     // set LED accordingly
    printk(KERN_INFO "myencoder: Initializing the myencoder LKM\n");
 
@@ -373,8 +372,8 @@ static irq_handler_t erpi_gpio_irq_handlerA(unsigned int irq,
                                            void *dev_id, struct pt_regs *regs) 
 {   
     // pin1()
-    ledOn = !ledOn;                     // invert the LED state
-    gpio_set_value(gpioLED, ledOn);     // set LED accordingly
+   //  ledOn = !ledOn;                     // invert the LED state
+    gpio_set_value(gpioLED, gpio_get_value(gpioButton));     // set LED accordingly
     return (irq_handler_t) IRQ_HANDLED;      // announce IRQ handled 
 }
 // static irq_handler_t erpi_gpio_irq_handler_B(unsigned int irq, 
