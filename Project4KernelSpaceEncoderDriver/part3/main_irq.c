@@ -6,7 +6,7 @@
 #include <linux/interrupt.h>                  // for the IRQ code
 #include <linux/fs.h>             // Header for the Linux file system support
 #include <linux/uaccess.h>          // Required for the copy to user function
-#define DEBUG
+//#define DEBUG
 #define  DEVICE_MAJOR 0         ///< Requested device node major number or 0 for dynamic allocation
 #define  DEVICE_NAME "irq1"   ///< In this implementation, the device name has nothing to do with the name of the device in /dev. You must use mknod to create the device node in /dev
 
