@@ -181,8 +181,8 @@ module_exit(myencoder_exit);
 
 
 
-static unsigned int gpioLED = 17;             // pin 11 (GPIO17) 
-static unsigned int gpioButton = 27;          // pin 13 (GPIO27) 
+static unsigned int gpioLED = 27;             // pin 11 (GPIO17) 
+static unsigned int gpioButton = 17;          // pin 13 (GPIO27) 
 static unsigned int irqNumber;                // share IRQ num within file 
 static unsigned int numberPresses = 0;        // store number of presses 
 static bool         ledOn = 0;                // used to invert state of LED
@@ -223,31 +223,12 @@ static int __init erpi_gpio_init(void)
     // This next call requests an interrupt line   
     result = request_irq(irqNumber,          // interrupt number requested            
         (irq_handler_t) erpi_gpio_irq_handlerA,   // handler function            
-        IRQF_TRIGGER_RISING,                     // on rising edge (press, not release)            
-        "erpi_gpio_handler_A",                     // used in /proc/interrupts
+        IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,                     // on rising edge (press, not release)            
+        "erpi_gpio_handler",                     // used in /proc/interrupts
         NULL);                                   // *dev_id for shared interrupt lines
     printk(KERN_INFO "GPIO_TEST: IRQ request result is: %d\n", result);
-
-    result = request_irq(irqNumber,          // interrupt number requested            
-        (irq_handler_t) erpi_gpio_irq_handlerB,   // handler function            
-        IRQF_TRIGGER_RISING  // on rising edge (press, not release)            
-        "erpi_gpio_handler_B",                     // used in /proc/interrupts
-        NULL);                                   // *dev_id for shared interrupt lines
-    printk(KERN_INFO "GPIO_TEST: IRQ request result is: %d\n", result);
-
-    result = request_irq(irqNumber,          // interrupt number requested            
-        (irq_handler_t) erpi_gpio_irq_handlerB,   // handler function            
-        IRQF_TRIGGER_RISING  // on rising edge (press, not release)            
-        "erpi_gpio_handler_B",                     // used in /proc/interrupts
-        NULL);                                   // *dev_id for shared interrupt lines
-    printk(KERN_INFO "GPIO_TEST: IRQ request result is: %d\n", result);
-
-    result = request_irq(irqNumber,          // interrupt number requested            
-        (irq_handler_t) erpi_gpio_irq_handlerB,   // handler function            
-        IRQF_TRIGGER_RISING  // on rising edge (press, not release)            
-        "erpi_gpio_handler_B",                     // used in /proc/interrupts
-        NULL);                                   // *dev_id for shared interrupt lines
-    printk(KERN_INFO "GPIO_TEST: IRQ request result is: %d\n", result);
+    ledOn = gpio_get_value(gpioButton);                     // invert the LED state
+    gpio_set_value(gpioLED, ledOn);     // set LED accordingly
     return result;
 }
 
@@ -269,171 +250,92 @@ static void __exit erpi_gpio_exit(void)
 // here is the old interrupt handler,
 // we have to add another one and change them to mirror our old encoder code:
 
-int last_state1, last_state2;
-long counter;
-int direction;
+// void pin1()
+// {
 
-void pin1(int rising)
-{
+//     // phase A
+//     last_state1 = PIND & (1 << PIND2);
 
-    // phase A
-    last_state1 = rising;
-
-    if (rising)
-    {
-        if (last_state2)
-        {
-            counter--;
-            direction = -1;
-        }
-        else
-        {
-            counter++;
-            direction = 1;
-        }
-    }
-    else
-    {
-        if (last_state2)
-        {
-            counter++;
-            direction = 1;
-        }
-        else
-        {
-            counter--;
-            direction = -1;
-        }
-    }
-    // PORTB ^= (1 << 5);
+//     if (PIND & (1 << PIND2))
+//     {
+//         if (last_state2)
+//         {
+//             counter--;
+//             forward_ = false;
+//         }
+//         else
+//         {
+//             counter++;
+//             forward_ = true;
+//         }
+//     }
+//     else
+//     {
+//         if (last_state2)
+//         {
+//             counter++;
+//             forward_ = true;
+//         }
+//         else
+//         {
+//             counter--;
+//             forward_ = false;
+//         }
+//     }
+//     // PORTB ^= (1 << 5);
     
-}
+// }
 
-void pin2()
-{
+// void pin2()
+// {
 
-    // phase B
-    last_state2 = PIND & (1 << PIND3);
-    if (PIND & (1 << PIND3))
-    {
-        if (last_state1)
-        {
-            counter++;
-            direction = 1;
-        }
-        else
-        {
-            counter--;
-            direction = -1;
-        }
-    }
-    else
-    {
-        if (last_state1)
-        {
-            counter--;
-            direction = -1;
-        }
-        else
-        {
-            counter++;
-            direction = 1;
-        }
-    }
-    // PORTB ^= (1 << 5);
-}
-#define MOVINGAVGPERIOD 10
-uint32_t moving_avg_buffer[MOVINGAVGPERIOD];
-int moving_avg_i;
-uint64_t last_time;/*
-       Re-enable timer. Because this function will be called only first time. 
-       If we re-enable this will work like periodic timer. 
-    */
-int overflow_counts;
+//     // phase B
+//     last_state2 = PIND & (1 << PIND3);
+//     if (PIND & (1 << PIND3))
+//     {
+//         if (last_state1)
+//         {
+//             counter++;
+//             forward_ = true;
+//         }
+//         else
+//         {
+//             counter--;
+//             forward_ = false;
+//         }
+//     }
+//     else
+//     {
+//         if (last_state1)
+//         {
+//             counter--;
+//             forward_ = false;
+//         }
+//         else
+//         {
+//             counter++;
+//             forward_ = true;
+//         }
+//     }
+//     // PORTB ^= (1 << 5);
+// }
 
-void moving_avg_put(int64_t value){
-    moving_avg_buffer[moving_avg_i] = value;
-    moving_avg_i = (moving_avg_i) % MOVINGAVGPERIOD;
-}
-
-int moving_avg_get()
-
-
-static irq_handler_t erpi_gpio_irq_handler_A_rising(unsigned int irq, 
+static irq_handler_t erpi_gpio_irq_handler_A(unsigned int irq, 
                                            void *dev_id, struct pt_regs *regs) 
 {   
-    pin1(1)
-    // here is where the magic happens:
-    // old code:
-    
-    // int t = timer_u.get();
-    // timer_u.reset();
-    // if (delta_count_overflows > 0){
-    //     delta_counts.set(delta_count_overflows * (long)0xffff + t);
-    //     delta_count_overflows = 0;
-    // }
-    // else{
-    //     delta_counts.set(t);
-    // }
-
-    uint64_t t = ktime_get();
-    moving_avg_put(t - last_time);
-    last_time = t;
-    overflow_counts = 0;
+    // pin1()
+    ledOn = !ledOn;                     // invert the LED state
+    gpio_set_value(gpioLED, ledOn);     // set LED accordingly
     return (irq_handler_t) IRQ_HANDLED;      // announce IRQ handled 
 }
-
-void timer_callback(struct timer_list * data)
-{
-    /* do your timer stuff here */
-    pr_info("Timer Callback function Called [%d]\n",count++);
-    
-    
-  if (overflow_counts > 100)
-  {
-    // delta_counts.reset();
-    return;
-  }
-  overflow_counts++;
-  int imax = 0;
-  if (overflow_counts > MOVINGAVGPERIOD)
-  {
-    for (int i=0; i< overflow_counts; i++){
-        moving_avg_put(overflow_counts*1000);
-    }
-  }
-  size_of_message = sprintf("%d", direction*moving_avg_get());
-
-  /*
-       Re-enable timer. Because this function will be called only first time. 
-       If we re-enable this will work like periodic timer. 
-    */
-    mod_timer(&etx_timer, jiffies + msecs_to_jiffies(32));
-}
-
-
-static irq_handler_t erpi_gpio_irq_handler_A_falling(unsigned int irq, 
+static irq_handler_t erpi_gpio_irq_handler_B(unsigned int irq, 
                                            void *dev_id, struct pt_regs *regs) 
 {   
-    pin1(0)
-    return (irq_handler_t) IRQ_HANDLED;      // announce IRQ handled 
-}
-
-static irq_handler_t erpi_gpio_irq_handler_B_rising(unsigned int irq, 
-                                           void *dev_id, struct pt_regs *regs) 
-{   
-    pin2(1)
-    return (irq_handler_t) IRQ_HANDLED;      // announce IRQ handled 
-}
-static irq_handler_t erpi_gpio_irq_handler_B_falling(unsigned int irq, 
-                                           void *dev_id, struct pt_regs *regs) 
-{   
-    pin2(0)
+    pin2()
     return (irq_handler_t) IRQ_HANDLED;      // announce IRQ handled 
 }
 
 module_init(erpi_gpio_init);
 module_exit(erpi_gpio_exit);
-
 
 
