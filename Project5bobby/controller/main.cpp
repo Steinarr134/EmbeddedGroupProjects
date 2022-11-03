@@ -45,6 +45,14 @@ int main() {
 		printf("wrong whoami, %d\n", ret);
 		exit(1);
 	}
+	// todo: set range in XYZ_DATA_CFG register
+	// f_Read, only 8 bits | data rate 200Hz | low noise | activate
+	uint8_t ctrl_reg |= (1<<1) | (2<<3) | (1<<2) | (1<<0);  
+	ret = i2c_smbus_write_byte_data(file, FXOS8700CQ_CTRL_REG1, ctrl_reg);
+
+	printf(ret);
+	printf("\n");
+
 
 
 
