@@ -288,6 +288,44 @@ unsigned char function_code;
 uint16_t register_number;
 uint16_t register_data;
 
+uint8_t this_id = 7;
+
+
+void decrypt_buffer()
+{
+}
+
+void send_values()
+{
+  buffer[0] = address;
+  buffer[1] = function_code;
+  buffer[2] = register_number >> 8;
+  buffer[3] = register_number & 0xff;
+  buffer[4] = register_data >> 8;
+  buffer[5] = register_data & 0xff;
+  crc = ModRTU_CRC(buffer, 6);
+  buffer[6] = crc >> 8; // I think the ModRTU function handles the LSB situation for us
+  buffer[7] = crc & 0xff;
+  for (uint8_t i = 0; i<8; i++)
+  {
+    USART_Transmit(buffer[i]);
+  }
+}
+
+void send_error(uint16_t error_code)
+{
+  buffer[0] = address;
+  bufffer[1] = function_code | (1<<7);
+  buffer[2] = error_code >>8;
+  buffer[3] = error_code & 0xff;
+  buffer[4] = 0;
+  buffer[5] = 0;
+
+  crc = ModRTU_CRC(buffer, 6);
+  buffer[6] = crc >> 8; // I think the ModRTU function handles the LSB situation for us
+  buffer[7] = crc & 0xff;
+}
+
 // Compute the MODBUS RTU CRC
 uint16_t ModRTU_CRC(uint8_t buf[], int len)
 {
@@ -310,18 +348,13 @@ uint16_t ModRTU_CRC(uint8_t buf[], int len)
   return crc;
 }
 
-bool check_buffer_crc(){
+
+// checks if the crc matches the buffer
+bool crc_matches(){
   uint16_t crc = ModRTU_CRC(buffer, 6);
   return (crc == (uint16_t*)buffer[6]);
 }
-void read()
-{
-  buffer[buf_i++] = USART_Receive();
-  if (buf_i == 8)
-  {
-    
-  }
-}
+
 
 int main()
 {
@@ -337,54 +370,137 @@ int main()
 
     if (USART_receive_ready())
     {
-      unsigned char inn = USART_Receive();
-      // print_i_ln(inn);
-      USART_Transmit(inn);
-      if (inn == 8)
+
+      // receive into buffer, TODO: add something to keep the buffer reading in sync,
+      // perhaps something like measuring the time between readings and if it is above
+      // some threshold set buf_i as 0 (assume new dataframe)
+      buffer[buf_i++] = USART_Receive();
+      if (buf_i == 8)
       {
-        // backspace
-        if (b_i > 0)
-          b_i--;
-        continue;
-      }
-      if (b_i >= buffer_size && inn != '\n')
-      {
-        println(toolongmsg, sizeof(toolongmsg));
-        reset_buffer();
-        continue;
-      }
-      else
-      {
-        if (inn == '\n')
+        buf_i = 0;
+        if (crc_matches())
         {
-          if ('A' <= b[0] && b[0] <= 'Z')
+          decrypt_buffer();
+          if (address == this_id)
           {
-            // send command to current state
-            if (b[0] == 'I')
-              context->transition_to(new Init);
-            else if (b[0] == 'P')
-              context->transition_to(new PreOp);
-            else if (b[0] == 'O')
-              context->transition_to(new Op);
-            else if (b[0] == 'S')
-              context->transition_to(new Stop);
-            else
+            // maybe these can be in seperate functions?
+            // but the context is a local variable in main 
+            // so that would either have to be global or pass a pointer to it...
+            switch (function_code)
             {
-              context->cmd(b[0]);
+            case 3:
+              // reads one register
+              // not sure what exactly should be read....
+              break;
+            case 6:
+              // writes one register
+              switch (register_number)
+              {
+              case 0:
+                // sets state
+                switch (register_data)
+                {
+                case 1:
+                  // set operational
+                  context->transition_to(new Op);
+                  send_values(); // respond with echo
+                  break;
+                case 2:
+                  // stop node
+                  context->transition_to(new Stop);
+                  send_values(); // respond with echo
+                  break;
+                case 80:
+                  // set preoperational
+                  context->transition_to(new PreOp);
+                  send_values(); // respond with echo
+                  break;
+                case 81:
+                  // reset ?
+                  // TODO
+                  break;
+                case 82:
+                  // reset communications ?
+                  // TODO
+                  break;
+                default:
+                  // send error code: illegal data value
+                  send_error(0x03);
+                  break;
+                }
+                break;
+
+              case 666:
+                // set the speed
+                int16_t set_point = (int16_t *)&register_data;
+                send_values();
+                break;
+
+              default:
+                // send error code, illegal register number
+                send_error(0x02);
+                break;
+              }
+              break;
+
+            default:
+              // send error code, illegal function code
+              send_error(0x01);
+              break;
+            }
             }
           }
-          else if ('a' <= b[0] && b[0] <= 'z')
-          {
-            // send parsed to current state
-            print_one('#');
-            context->set(parse());
-          }
-          reset_buffer();
         }
-        else
-        {
-          b[b_i++] = inn;
-        }
+      }
+
+      // unsigned char inn = USART_Receive();
+      // // print_i_ln(inn);
+      // USART_Transmit(inn);
+      // if (inn == 8)
+      // {
+      //   // backspace
+      //   if (b_i > 0)
+      //     b_i--;
+      //   continue;
+      // }
+      // if (b_i >= buffer_size && inn != '\n')
+      // {
+      //   println(toolongmsg, sizeof(toolongmsg));
+      //   reset_buffer();
+      //   continue;
+      // }
+      // else
+      // {
+      //   if (inn == '\n')
+      //   {
+      //     if ('A' <= b[0] && b[0] <= 'Z')
+      //     {
+      //       // send command to current state
+      //       if (b[0] == 'I')
+      //         context->transition_to(new Init);
+      //       else if (b[0] == 'P')
+      //         context->transition_to(new PreOp);
+      //       else if (b[0] == 'O')
+      //         context->transition_to(new Op);
+      //       else if (b[0] == 'S')
+      //         context->transition_to(new Stop);
+      //       else
+      //       {
+      //         context->cmd(b[0]);
+      //       }
+      //     }
+      //     else if ('a' <= b[0] && b[0] <= 'z')
+      //     {
+      //       // send parsed to current state
+      //       print_one('#');
+      //       context->set(parse());
+      //     }
+      //     reset_buffer();
+      //   }
+      //   else
+      //   {
+      //     b[b_i++] = inn;
+      //   }
       }
     }
     
