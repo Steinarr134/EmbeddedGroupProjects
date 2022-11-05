@@ -17,6 +17,9 @@ extern "C" {
 #define FXOS8700CQ_M_CTRL_REG1 0x5B
 #define FXOS8700CQ_M_CTRL_REG2 0x5C
 #define FXOS8700CQ_WHOAMI_VAL 0xC7
+#define X_reg_msb 0x01
+#define Y_reg_msb 0x03
+#define Z_reg_msb 0x05
 
 
 int file;
@@ -46,12 +49,20 @@ int main() {
 		exit(1);
 	}
 	// todo: set range in XYZ_DATA_CFG register
+	// todo: increase i2c frequency, maybe not needed if we're only reading 8 bits
 	// f_Read, only 8 bits | data rate 200Hz | low noise | activate
-	uint8_t ctrl_reg |= (1<<1) | (2<<3) | (1<<2) | (1<<0);  
+	uint8_t ctrl_reg;
+	ctrl_reg = (1<<1) | (2<<3) | (1<<2) | (1<<0);  
 	ret = i2c_smbus_write_byte_data(file, FXOS8700CQ_CTRL_REG1, ctrl_reg);
-
-	printf(ret);
+	
+	printf("ret from write byte: %d", ret);
 	printf("\n");
+	int8_t z;
+	while(1) {
+		z = i2c_smbus_read_byte_data(file, Z_reg_msb);
+		printf("%d    \r", z);
+		//usleep(5000L); //sleep 5ms? 
+	}
 
 
 
