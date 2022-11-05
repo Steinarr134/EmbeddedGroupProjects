@@ -28,8 +28,7 @@ uint16_t ModRTU_CRC(uint8_t buf[], int len)
                 crc >>= 1; // Just shift right
         }
     }
-    // Note, this number has low and high bytes swapped, so use it accordingly(or swap bytes)
-    return crc;
+    return (crc >> 8 ) | ((crc&0xff) << 8);
 }
 
 int main(int argc, char *argv[])
@@ -42,7 +41,7 @@ int main(int argc, char *argv[])
         return -2;
     }
 
-    if ((file = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
+    if ((file = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY)) < 0)
     {
         perror("UART: Failed to open the file.\n");
         return -1;
@@ -53,7 +52,7 @@ int main(int argc, char *argv[])
     tcgetattr(file, &options);
     // set as binary
     cfmakeraw(&options);
-    options.c_cflag |= B115200 | CS8 | CREAD | CLOCAL;
+    options.c_cflag |= B9600 | CS8 | CREAD | CLOCAL;
     tcflush(file, TCIFLUSH);
     tcsetattr(file, TCSANOW, &options);
 
@@ -74,8 +73,8 @@ int main(int argc, char *argv[])
     msg[4] = register_data >> 8;
     msg[5] = register_data & 0xff;
     uint16_t crc = ModRTU_CRC(msg, 6);
-    msg[7] = crc >> 8; // I think the ModRTU function handles the LSB situation for us
-    msg[6] = crc & 0xff;
+    msg[6] = crc >> 8; // I think the ModRTU function handles the LSB situation for us
+    msg[7] = crc & 0xff;
 
     msg[0] = atoi(argv[1]);
     msg[1] = atoi(argv[2]);
@@ -93,6 +92,25 @@ int main(int argc, char *argv[])
     }
     putchar('\n');
 
+    count = read(file, &msg, MSG_LEN);
+    //sleep(2);
+    if (count > 0)
+    {
+        printf("Successfully read: ");
+
+        for (uint8_t i = 0; i < MSG_LEN; i++)
+        {
+            printf("%02x ", msg[i]);
+        }
+        putchar('\n');
+    }
+    else
+    {
+        printf("nothing to be read\n");
+    }
+
     close(file);
+
+
     return 0;
 }
