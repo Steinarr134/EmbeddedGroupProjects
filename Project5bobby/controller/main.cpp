@@ -52,14 +52,14 @@ int main() {
 	// todo: increase i2c frequency, maybe not needed if we're only reading 8 bits
 	// f_Read, only 8 bits | data rate 200Hz | low noise | activate
 	uint8_t ctrl_reg;
-	ctrl_reg = (1<<1) | (2<<3) | (1<<2) | (1<<0);  
+	ctrl_reg = /*(1<<1) | */(2<<3) | (1<<2) | (1<<0);  
 	ret = i2c_smbus_write_byte_data(file, FXOS8700CQ_CTRL_REG1, ctrl_reg);
 	
 	printf("ret from write byte: %d", ret);
 	printf("\n");
-	int8_t z;
+	int16_t z;
 	while(1) {
-		z = i2c_smbus_read_byte_data(file, Z_reg_msb);
+		z = (int16_t)i2c_smbus_read_byte_data(file, Z_reg_msb) << 8 | i2c_smbus_read_byte_data(file, Z_reg_msb+1) >>2;
 		printf("%d    \r", z);
 		//usleep(5000L); //sleep 5ms? 
 	}
