@@ -20,6 +20,9 @@
 
 #include "hackySerial.h"
 #include "state.h"
+#include <Wire.h>
+#include "accel.h"
+
 // #include "Arduino.h"
 #define FOSC 16000000 // Clock Speed
 #define BAUD 9600
@@ -370,14 +373,38 @@ bool crc_matches(){
 }
 
 
+
 int main()
 {
-  //USART_Init(0); // 1megabaud
-  USART_Init(MYUBRR); // 9600
+  Wire.begin();
+  Wire.setClock(400000);
+  USART_Init(0); // 1megabaud
+  //USART_Init(MYUBRR); // 9600
   timer_u.init();
   timer_msec.init(DELTA_T);
   encoder.init();
   context = new Context(new Init);
+  Accelerometer accel = Accelerometer(0x1f);
+	uint8_t ret = accel.init();
+  /*
+	if(ret) {
+    print_i_ln(ret);
+	}
+	
+	int16_t x,y,z;
+	while(1) {
+    _delay_ms(1);
+		x = accel.read_x_axis();
+    _delay_ms(1);
+		y = accel.read_y_axis();
+    _delay_ms(1);
+		z = accel.read_z_axis();
+    _delay_ms(1);
+    print_i_ln(x);
+    print_i_ln(y);
+    print_i_ln(z);
+		//usleep(5000L); //sleep 5ms? 
+	}*/
   while (true)
   {
     context->do_work();
