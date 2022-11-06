@@ -9,21 +9,15 @@ extern "C" {
 #include </usr/include/i2c/smbus.h>
 }
 
-// FXOS8700CQ internal register addresses
-#define FXOS8700CQ_STATUS 0x00
-#define FXOS8700CQ_WHOAMI 0x0D
-#define FXOS8700CQ_XYZ_DATA_CFG 0x0E
-#define FXOS8700CQ_CTRL_REG1 0x2A
-#define FXOS8700CQ_M_CTRL_REG1 0x5B
-#define FXOS8700CQ_M_CTRL_REG2 0x5C
-#define FXOS8700CQ_WHOAMI_VAL 0xC7
+#include "accel.h"
+
 
 
 int file;
+int ACCEL_ADDR = 0x1f;
 
 int main() {
-	int ACCEL_ADDR = 0x1f;
-	file = open("/dev/i2c-1", O_RDWR);
+	file = open("/dev/i2c-1", O_RDWR); // possible to hide this from user? in case user wants to use i2c for more devices?
 	if(file <0) {
 		printf("opening /dev/i2c-x failed:%d", file); //todo: check errno
 		exit(1);
@@ -32,26 +26,23 @@ int main() {
 		printf("ioctl failed, check  for more details");
 		exit(1);
 	}
-	
-	//here we check if it is indeed the right part
-	uint8_t ret;
-	ret = i2c_smbus_read_byte_data(file, FXOS8700CQ_WHOAMI);
-	//printf("write_byte: %d\n", ret);
-	//ret = i2c_smbus_read_byte(file);
-	if(ret == 0xC7) {
-		printf("congrats, it's the correct chip");	
-	}
-	else {
-		printf("wrong whoami, %d\n", ret);
+
+	Accelerometer accel = Accelerometer(ACCEL_ADDR, file);
+	uint8_t ret = accel.init();
+	if(ret) {
+		printf("something failed: %d\n", ret);
 		exit(1);
 	}
-	// todo: set range in XYZ_DATA_CFG register
-	// f_Read, only 8 bits | data rate 200Hz | low noise | activate
-	uint8_t ctrl_reg |= (1<<1) | (2<<3) | (1<<2) | (1<<0);  
-	ret = i2c_smbus_write_byte_data(file, FXOS8700CQ_CTRL_REG1, ctrl_reg);
+	
+	int16_t x,y,z;
+	while(1) {
 
-	printf(ret);
-	printf("\n");
+		x = accel.read_x_axis();
+		y = accel.read_y_axis();
+		z = accel.read_z_axis();
+		printf("x: %d, y: %d, z: %d                   \r", x, y, z);
+		//usleep(5000L); //sleep 5ms? 
+	}
 
 
 

@@ -311,6 +311,7 @@ uint16_t register_number;
 uint16_t register_data;
 
 uint8_t this_id = 7;
+uint16_t crc;
 
 
 void decrypt_buffer()
@@ -329,6 +330,26 @@ void transmit_buffer()
   }
 }
 
+uint16_t ModRTU_CRC(uint8_t buf[], int len)
+{
+  uint16_t crc = 0xFFFF;
+  for (int pos = 0; pos < len; pos++)
+  {
+    crc ^= (uint16_t)buf[pos]; // XOR byte into least sig. byte of crc 
+    for (int i = 8; i != 0; i--)
+    { // Loop over each bit
+      if ((crc & 0x0001) != 0)
+      {            // If the LSB is set
+        crc >>= 1; // Shift right and XOR 0xA001
+        crc ^= 0xA001;
+      }
+      else         // Else LSB is not set
+        crc >>= 1; // Just shift right
+    }
+  }
+  // Note, this number has low and high bytes swapped, so use it accordingly(or swap bytes) 
+  return crc;
+}
 void send_values()
 {
   buffer[0] = address;
@@ -358,6 +379,7 @@ void send_error(uint16_t error_code)
   transmit_buffer();
 }
 
+// Compute the MODBUS RTU CRC
 
 
 // checks if the crc matches the buffer
