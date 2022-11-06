@@ -133,21 +133,21 @@ public:
     if (flag)
     {
       flag = 0;
-      print_i_ln(delta_counts.get());
+      // print_i_ln(delta_counts.get());
     }
   }
   void on_entry() override
   {
-    print_one('I');
-    print_one('n');
-    print_one('i');
-    print_one('t');
-    println();
+    // print_one('I');
+    // print_one('n');
+    // print_one('i');
+    // print_one('t');
+    // println();
   }
   void on_exit() override {}
   void set(Parsed p) override
   {
-    print_one('s');
+    // print_one('s');
   }
   void cmd(unsigned char C) override {}
 };
@@ -158,22 +158,22 @@ public:
     if (flag)
     {
       flag = 0;
-      print_3_numbers(set_point, (double)(controller.k_p*1000), (double)(controller.k_i*10));
+      // print_3_numbers(set_point, (double)(controller.k_p*1000), (double)(controller.k_i*10));
     }
   }
   void on_entry() override
   {
-    print_one('P');
-    print_one('r');
-    print_one('e');
-    print_one('O');
-    print_one('p');
-    println();
+    // print_one('P');
+    // print_one('r');
+    // print_one('e');
+    // print_one('O');
+    // print_one('p');
+    // println();
     blink_led_count = 160;
   }
   void on_exit() override {}
   void set(Parsed p) override{
-        print_one('W');
+        // print_one('W');
   switch (p.what)
   {
   case 's':
@@ -186,7 +186,7 @@ public:
     controller.set_ki(p.val);
     break;
   }
-  print_i_ln(set_point);
+  // print_i_ln(set_point);
   }
   void cmd(unsigned char C) override {}
 };
@@ -218,7 +218,7 @@ public:
         }
       }
       duty = (int16_t)controller.update(set_point, rpm); // RPM of input shaft, not rpm of output shaft!!
-      print_3_numbers(set_point, rpm, (set_point/255 + 1)*duty);
+      // print_3_numbers(set_point, rpm, (set_point/255 + 1)*duty);
       // if (duty == 0){
       //   motor_controller.brake();
       // }
@@ -233,15 +233,15 @@ public:
   void on_entry() override
   {
     motor_controller.unbrake();
-    print_one('O');
-    print_one('p');
-    println();
+    // print_one('O');
+    // print_one('p');
+    // println();
     blink_led_count = 0;
   }
   void on_exit() override {}
   void set(Parsed p) override
   {
-    print_one('W');
+    // print_one('W');
     switch (p.what){
       case 's':
         set_point = p.val;
@@ -253,7 +253,7 @@ public:
         controller.set_ki(p.val);
         break;
     }
-    print_i_ln(set_point);
+    // print_i_ln(set_point);
   }
   void cmd(unsigned char C) override {}
 };
@@ -265,11 +265,11 @@ public:
   void on_entry() override
   {
     motor_controller.brake();
-    print_one('S');
-    print_one('t');
-    print_one('o');
-    print_one('p');
-    println();
+    // print_one('S');
+    // print_one('t');
+    // print_one('o');
+    // print_one('p');
+    // println();
     blink_led_count = 80;
   }
   void on_exit() override {}
@@ -279,52 +279,6 @@ public:
   void cmd(unsigned char C) override {}
 };
 
-// message is always 8 bytes
-unsigned char buffer[8];
-uint8_t buf_i = 0;
-
-unsigned char address;
-unsigned char function_code;
-uint16_t register_number;
-uint16_t register_data;
-
-uint8_t this_id = 7;
-
-
-void decrypt_buffer()
-{
-}
-
-void send_values()
-{
-  buffer[0] = address;
-  buffer[1] = function_code;
-  buffer[2] = register_number >> 8;
-  buffer[3] = register_number & 0xff;
-  buffer[4] = register_data >> 8;
-  buffer[5] = register_data & 0xff;
-  crc = ModRTU_CRC(buffer, 6);
-  buffer[6] = crc >> 8; // I think the ModRTU function handles the LSB situation for us
-  buffer[7] = crc & 0xff;
-  for (uint8_t i = 0; i<8; i++)
-  {
-    USART_Transmit(buffer[i]);
-  }
-}
-
-void send_error(uint16_t error_code)
-{
-  buffer[0] = address;
-  bufffer[1] = function_code | (1<<7);
-  buffer[2] = error_code >>8;
-  buffer[3] = error_code & 0xff;
-  buffer[4] = 0;
-  buffer[5] = 0;
-
-  crc = ModRTU_CRC(buffer, 6);
-  buffer[6] = crc >> 8; // I think the ModRTU function handles the LSB situation for us
-  buffer[7] = crc & 0xff;
-}
 
 // Compute the MODBUS RTU CRC
 uint16_t ModRTU_CRC(uint8_t buf[], int len)
@@ -332,8 +286,8 @@ uint16_t ModRTU_CRC(uint8_t buf[], int len)
   uint16_t crc = 0xFFFF;
   for (int pos = 0; pos < len; pos++)
   {
-    crc ^= (uint16_t)buf[pos]; // XOR byte into least sig. by
-    te of crc for (int i = 8; i != 0; i--)
+    crc ^= (uint16_t)buf[pos]; // XOR byte into least sig. byte of crc
+    for (int i = 8; i != 0; i--)
     { // Loop over each bit
       if ((crc & 0x0001) != 0)
       {            // If the LSB is set
@@ -344,22 +298,80 @@ uint16_t ModRTU_CRC(uint8_t buf[], int len)
         crc >>= 1; // Just shift right
     }
   }
-  // Note, this number has low and high bytes swapped, so use it accordingly(or swap bytes) 
-  return crc;
+  return (crc >> 8) | ((crc & 0xff) << 8);
 }
+
+// message is always 8 bytes
+uint8_t buffer[8];
+uint8_t buf_i = 0;
+
+uint8_t address;
+uint8_t function_code;
+uint16_t register_number;
+uint16_t register_data;
+
+uint8_t this_id = 7;
+
+
+void decrypt_buffer()
+{
+  address = buffer[0];
+  function_code = buffer[1];
+  register_number = (buffer[2] << 8) | buffer[3];
+  register_data = (buffer[4] << 8) | buffer[5];
+}
+
+void transmit_buffer()
+{
+  for (uint8_t i = 0; i<8; i++)
+  {
+    USART_Transmit(buffer[i]);
+  }
+}
+
+void send_values()
+{
+  buffer[0] = address;
+  buffer[1] = function_code;
+  buffer[2] = register_number >> 8;
+  buffer[3] = register_number & 0xff;
+  buffer[4] = register_data >> 8;
+  buffer[5] = register_data & 0xff;
+  uint16_t crc = ModRTU_CRC(buffer, 6);
+  buffer[6] = crc >> 8; // I think the ModRTU function handles the LSB situation for us
+  buffer[7] = crc & 0xff;
+  transmit_buffer();
+}
+
+void send_error(uint16_t error_code)
+{
+  buffer[0] = address;
+  buffer[1] = function_code | (1<<7);
+  buffer[2] = error_code >>8;
+  buffer[3] = error_code & 0xff;
+  buffer[4] = 0;
+  buffer[5] = 0;
+
+  uint16_t crc = ModRTU_CRC(buffer, 6);
+  buffer[6] = crc >> 8; // I think the ModRTU function handles the LSB situation for us
+  buffer[7] = crc & 0xff;
+  transmit_buffer();
+}
+
 
 
 // checks if the crc matches the buffer
 bool crc_matches(){
+  return 1;
   uint16_t crc = ModRTU_CRC(buffer, 6);
-  return (crc == (uint16_t*)buffer[6]);
+  return (crc == (uint16_t)buffer[6]);
 }
 
 
 int main()
 {
-  USART_Init(0); // 1megabaud
-  //USART_Init(MYUBRR); // 9600
+  //USART_Init(0); // 1megabaud
+  USART_Init(MYUBRR); // 9600
   timer_u.init();
   timer_msec.init(DELTA_T);
   encoder.init();
@@ -375,6 +387,7 @@ int main()
       // perhaps something like measuring the time between readings and if it is above
       // some threshold set buf_i as 0 (assume new dataframe)
       buffer[buf_i++] = USART_Receive();
+      //print_one(buffer[buf_i-1]);
       if (buf_i == 8)
       {
         buf_i = 0;
@@ -389,6 +402,7 @@ int main()
             switch (function_code)
             {
             case 3:
+              send_values();
               // reads one register
               // not sure what exactly should be read....
               break;
@@ -432,7 +446,7 @@ int main()
 
               case 666:
                 // set the speed
-                int16_t set_point = (int16_t *)&register_data;
+                set_point = (int16_t&)register_data;
                 send_values();
                 break;
 
@@ -448,10 +462,30 @@ int main()
               send_error(0x01);
               break;
             }
-            }
+          }
+          else
+          {
+            print_one('n');
+            print_one('o');
+            print_one('m');
+            print_one('y');
+            print_one('i');
+            print_one('d');
+            println();
           }
         }
+        else
+        {
+          print_one('c');
+          print_one('r');
+          print_one('c');
+          print_one('e');
+          print_one('r');
+          print_one('r');
+          println();
+        }
       }
+    }
 
       // unsigned char inn = USART_Receive();
       // // print_i_ln(inn);
@@ -501,8 +535,8 @@ int main()
       //   {
       //     b[b_i++] = inn;
       //   }
-      }
-    }
+    //   }
+    // }
     
 
   }
