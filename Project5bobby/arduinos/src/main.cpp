@@ -298,7 +298,8 @@ uint16_t ModRTU_CRC(uint8_t buf[], int len)
         crc >>= 1; // Just shift right
     }
   }
-  return (crc >> 8) | ((crc & 0xff) << 8);
+  // return crc;
+   return (crc >> 8) | ((crc & 0xff) << 8);
 }
 
 // message is always 8 bytes
@@ -330,26 +331,6 @@ void transmit_buffer()
   }
 }
 
-uint16_t ModRTU_CRC(uint8_t buf[], int len)
-{
-  uint16_t crc = 0xFFFF;
-  for (int pos = 0; pos < len; pos++)
-  {
-    crc ^= (uint16_t)buf[pos]; // XOR byte into least sig. byte of crc 
-    for (int i = 8; i != 0; i--)
-    { // Loop over each bit
-      if ((crc & 0x0001) != 0)
-      {            // If the LSB is set
-        crc >>= 1; // Shift right and XOR 0xA001
-        crc ^= 0xA001;
-      }
-      else         // Else LSB is not set
-        crc >>= 1; // Just shift right
-    }
-  }
-  // Note, this number has low and high bytes swapped, so use it accordingly(or swap bytes) 
-  return crc;
-}
 void send_values()
 {
   buffer[0] = address;
@@ -384,9 +365,8 @@ void send_error(uint16_t error_code)
 
 // checks if the crc matches the buffer
 bool crc_matches(){
-  return 1;
   uint16_t crc = ModRTU_CRC(buffer, 6);
-  return (crc == (uint16_t)buffer[6]);
+  return ((((crc & 0xff) << 8) | (crc >> 8)) == (uint16_t &)buffer[6]);
 }
 
 
@@ -401,7 +381,6 @@ int main()
   while (true)
   {
     context->do_work();
-
     if (USART_receive_ready())
     {
 
@@ -409,7 +388,6 @@ int main()
       // perhaps something like measuring the time between readings and if it is above
       // some threshold set buf_i as 0 (assume new dataframe)
       buffer[buf_i++] = USART_Receive();
-      //print_one(buffer[buf_i-1]);
       if (buf_i == 8)
       {
         buf_i = 0;
@@ -481,6 +459,7 @@ int main()
 
             default:
               // send error code, illegal function code
+              // print_3_numbers(10, 1, 23);
               send_error(0x01);
               break;
             }

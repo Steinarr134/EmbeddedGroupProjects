@@ -9,13 +9,22 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+int file;
+
+uint8_t address;
+uint8_t function_code;
+uint16_t register_number;
+uint16_t register_data;
+
+uint8_t buffer[8];
+
 // Compute the MODBUS RTU CRC
 uint16_t ModRTU_CRC(uint8_t buf[], int len)
 {
     uint16_t crc = 0xFFFF;
     for (int pos = 0; pos < len; pos++)
     {
-        printf("crc - %02x\n", buf[pos]);
+        //printf("crc - %02x\n", buf[pos]);
         crc ^= (uint16_t)buf[pos]; // XOR byte into least sig. byte of crc 
         for (int i = 8; i != 0; i--)
         { // Loop over each bit
@@ -28,13 +37,51 @@ uint16_t ModRTU_CRC(uint8_t buf[], int len)
                 crc >>= 1; // Just shift right
         }
     }
+    //return crc;
     return (crc >> 8 ) | ((crc&0xff) << 8);
+}
+
+uint8_t crc_matches()
+{
+    uint16_t crc = ModRTU_CRC(buffer, 6);
+    return ((((crc & 0xff) << 8) | (crc >> 8)) == (uint16_t &)buffer[6]);
+}
+
+void decrypt_buffer()
+{
+    address = buffer[0];
+    function_code = buffer[1];
+    register_number = (buffer[2] << 8) | buffer[3];
+    register_data = (buffer[4] << 8) | buffer[5];
+}
+
+int transmit_buffer()
+{
+    return write(file, &buffer, 8);
+}
+
+int read_buffer()
+{
+    return read(file, &buffer, 8);
+}
+
+int send_values()
+{
+    buffer[0] = address;
+    buffer[1] = function_code;
+    buffer[2] = register_number >> 8;
+    buffer[3] = register_number & 0xff;
+    buffer[4] = register_data >> 8;
+    buffer[5] = register_data & 0xff;
+    uint16_t crc = ModRTU_CRC(buffer, 6);
+    buffer[6] = crc >> 8; // I think the ModRTU function handles the LSB situation for us
+    buffer[7] = crc & 0xff;
+    return transmit_buffer();
 }
 
 int main(int argc, char *argv[])
 {
-    int file, count;
-
+    int count;
     if (argc != 5)
     {
         printf("Invalid number of arguments, exiting!\n");
@@ -61,48 +108,38 @@ int main(int argc, char *argv[])
 
     // populate the message with integer values in binary format
 
-    uint8_t address = atoi(argv[1]);
-    uint8_t function_code = atoi(argv[2]);
-    uint16_t register_number = atoi(argv[3]);
-    uint16_t register_data = atoi(argv[4]);
+    address = atoi(argv[1]);
+    function_code = atoi(argv[2]);
+    register_number = atoi(argv[3]);
+    register_data = atoi(argv[4]);
 
-    msg[0] = address;
-    msg[1] = function_code;
-    msg[2] = register_number >> 8;
-    msg[3] = register_number & 0xff;
-    msg[4] = register_data >> 8;
-    msg[5] = register_data & 0xff;
-    uint16_t crc = ModRTU_CRC(msg, 6);
-    msg[6] = crc >> 8; // I think the ModRTU function handles the LSB situation for us
-    msg[7] = crc & 0xff;
+    count = send_values();
 
-    msg[0] = atoi(argv[1]);
-    msg[1] = atoi(argv[2]);
-
-    // write to serial
-    if (count = write(file, msg, MSG_LEN) < 0)
-    {
-        perror("Failed to write to the output\n");
-        return -1;
-    }
-
-    printf("Successfully sent: ");
-    for (uint8_t i = 0; i< MSG_LEN; i++){
-        printf("%02x ", msg[i]);
+    printf("Successfully sent(%d): ", count);
+    for (uint8_t i = 0; i< 8; i++){
+        printf("%02x ", buffer[i]);
     }
     putchar('\n');
 
-    count = read(file, &msg, MSG_LEN);
+    count = read_buffer();
     //sleep(2);
     if (count > 0)
     {
         printf("Successfully read: ");
 
-        for (uint8_t i = 0; i < MSG_LEN; i++)
+        for (uint8_t i = 0; i < 8; i++)
         {
-            printf("%02x ", msg[i]);
+            printf("%02x ", buffer[i]);
         }
         putchar('\n');
+        if (crc_matches())
+        {
+            printf("crc matches\n");
+        }
+        else
+        {
+            printf("crc mismatch: %d \n", ModRTU_CRC(buffer, 6));
+        }
     }
     else
     {
