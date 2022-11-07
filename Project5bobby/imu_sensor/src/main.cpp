@@ -103,7 +103,7 @@ uint8_t function_code;
 uint16_t register_number;
 uint16_t register_data;
 
-uint8_t this_id = 7;
+uint8_t this_id = 6;
 uint16_t crc;
 
 void decrypt_buffer()
@@ -221,14 +221,17 @@ int main()
               {
               case 1:
                 register_data = accel.read_x_axis();
+                send_values();
                 break;
 
               case 2:
                 register_data = accel.read_y_axis();
+                send_values();
                 break;
 
               case 3:
                 register_data = accel.read_z_axis();
+                send_values();
                 break;
 
               default:

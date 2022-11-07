@@ -378,9 +378,18 @@ int main()
   timer_msec.init(DELTA_T);
   encoder.init();
   context = new Context(new Init);
+  int counter = 0;
+  DDRB |= (1<<PORTB4);
   while (true)
   {
+    if(counter > 50) {
+    PORTB ^= (1<<PORTB4);
     context->do_work();
+    counter = 0;
+    }
+    else {
+      counter++;
+    }
     if (USART_receive_ready())
     {
 
@@ -487,7 +496,9 @@ int main()
         }
       }
     }
-
+    else {
+      _delay_us(100);
+    }
       // unsigned char inn = USART_Receive();
       // // print_i_ln(inn);
       // USART_Transmit(inn);
