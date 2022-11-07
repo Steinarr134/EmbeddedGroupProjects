@@ -165,12 +165,10 @@ int main()
   USART_Init(MYUBRR); // 9600
   Wire.begin();
   Wire.setClock(400000);
-  print_one('B');
   //USART_Init(0); // 1megabaud
+  sei();
   Accelerometer accel = Accelerometer(0x1f);
-  print_one('B');
   uint8_t ret = accel.init();
-  print_one('B');
 
   if (ret == 0)
   {
