@@ -169,7 +169,7 @@ int main()
   sei();
   Accelerometer accel = Accelerometer(0x1f);
   uint8_t ret = accel.init();
-
+/*
   if (ret == 0)
   {
     print_one('A');
@@ -188,7 +188,7 @@ int main()
     print_i_ln(y);
     print_i_ln(z);
     //usleep(5000L); //sleep 5ms?
-  }
+  }*/
   while (true)
   {
     if (USART_receive_ready())
