@@ -250,24 +250,24 @@ int main()
           }
           else
           {
-            print_one('n');
-            print_one('o');
-            print_one('m');
-            print_one('y');
-            print_one('i');
-            print_one('d');
-            println();
+            //print_one('n');
+            //print_one('o');
+            //print_one('m');
+            //print_one('y');
+            //print_one('i');
+            //print_one('d');
+            //println();
           }
         }
         else
         {
-          print_one('c');
-          print_one('r');
-          print_one('c');
-          print_one('e');
-          print_one('r');
-          print_one('r');
-          println();
+          //print_one('c');
+          //print_one('r');
+          //print_one('c');
+          //print_one('e');
+          //print_one('r');
+          //print_one('r');
+          //println();
         }
       }
     }
